@@ -1,0 +1,94 @@
+---
+title: "Login"
+api: "POST /api/auth/login"
+description: "Authenticate a user and receive a JWT token"
+---
+
+## Description
+
+Authenticates a user with username and password credentials. Returns a JWT token valid for 2 hours upon successful authentication.
+
+## Authentication
+
+No authentication required (public endpoint).
+
+## Request Body
+
+<ParamField body="NombreUsuario" type="string" required>
+  Username for authentication. Maximum length: 100 characters.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  User's password.
+</ParamField>
+
+## Response
+
+<ResponseField name="Token" type="string">
+  JWT token for authenticating subsequent requests. Valid for 2 hours.
+</ResponseField>
+
+<ResponseField name="Flag" type="boolean">
+  Indicates successful authentication. Returns `true` on success.
+</ResponseField>
+
+<ResponseField name="Message" type="string">
+  Status message. Returns "Login successful" on success or error message on failure.
+</ResponseField>
+
+## Examples
+
+### Successful Login
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "NombreUsuario": "admin",
+    "password": "SecurePassword123"
+  }'
+```
+
+```json Response
+{
+  "Token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "Flag": true,
+  "Message": "Login successful"
+}
+```
+</CodeGroup>
+
+### Failed Login
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "NombreUsuario": "admin",
+    "password": "WrongPassword"
+  }'
+```
+
+```json Response (401 Unauthorized)
+{
+  "Message": "Usuario o contraseña incorrectos"
+}
+```
+</CodeGroup>
+
+## JWT Token Claims
+
+The generated JWT token includes the following claims:
+
+- **Name**: User's username (NombreUsuario)
+- **Role**: User's role (Rol)
+- **JTI**: Unique token identifier (GUID)
+
+## Token Configuration
+
+- **Expires**: 2 hours from issuance
+- **Algorithm**: HMAC SHA256
+- **Issuer**: Configured in `JWT:Issuer`
+- **Audience**: Configured in `JWT:Audience`

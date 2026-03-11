@@ -1,0 +1,403 @@
+---
+title: Backend Architecture
+description: ASP.NET Core Web API backend architecture and implementation
+---
+
+## ASP.NET Core Web API Backend
+
+The backend is built using **ASP.NET Core Web API**, providing a RESTful API for the Blazor frontend to consume.
+
+### Project Structure
+
+```
+SolicitudesAPI/
+├── Controllers/                    # API endpoint controllers
+│   ├── AuthController.cs          # Authentication endpoints
+│   ├── CalendarioController.cs    # Calendar management
+│   ├── ExpedienteDTOesController.cs  # Request/case management
+│   ├── RecursoRevisionController.cs  # Review resources
+│   └── CambiarContrasena.cs       # Password change
+├── Models/                         # Entity models and DTOs
+│   ├── SistemaSolicitudesContext.cs  # EF Core DbContext
+│   ├── Expediente.cs              # Expediente entity
+│   ├── Usuario.cs                 # User entity
+│   ├── Calendario.cs              # Calendar entity
+│   └── DiaInhabilManual.cs        # Manual non-working day entity
+├── PDF/                            # PDF generation services
+├── Properties/                     # Project properties
+├── Program.cs                      # Application entry point
+├── appsettings.json               # Configuration
+└── SolicitudesAPI.csproj          # Project file
+```
+
+### Technology Stack
+
+#### Core Framework
+- **.NET 9.0** with ASP.NET Core Web API
+- **C# 11** with nullable reference types
+- **Entity Framework Core 9.0** - ORM for data access
+- **SQL Server** - Database provider
+
+#### Key NuGet Packages
+
+**Authentication & Security:**
+- `Microsoft.AspNetCore.Authentication.JwtBearer` (v9.0.4) - JWT authentication
+- `Microsoft.IdentityModel.Tokens` - Token validation
+
+**Database:**
+- `Microsoft.EntityFrameworkCore.SqlServer` (v9.0.4) - SQL Server provider
+- `Microsoft.EntityFrameworkCore.Tools` (v9.0.4) - Migration tools
+- `Microsoft.EntityFrameworkCore.Design` (v9.0.4) - Design-time support
+
+**API Documentation:**
+- `Microsoft.AspNetCore.OpenApi` (v9.0.4) - OpenAPI specification
+- `Scalar.AspNetCore` (v2.1.13) - Modern API documentation UI
+
+**PDF Generation:**
+- `QuestPDF` (v2023.12.3) - PDF document creation
+
+**Development Tools:**
+- `Microsoft.VisualStudio.Web.CodeGeneration.Design` (v9.0.0) - Scaffolding
+
+### Application Entry Point
+
+The `Program.cs` file configures the API services and middleware:
+
+#### Service Configuration
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// QuestPDF License (required for PDF generation)
+QuestPDF.Settings.License = LicenseType.Community;
+
+// API Controllers
+builder.Services.AddControllers();
+
+// OpenAPI/Swagger
+builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+
+// Database Context
+builder.Services.AddDbContext<SistemaSolicitudesContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+```
+
+#### CORS Configuration
+
+```csharp
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirBlazor", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+```
+
+**Note:** This permissive CORS policy should be restricted in production to specific origins.
+
+#### JWT Authentication
+
+```csharp
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)
+            )
+        };
+    });
+
+builder.Services.AddAuthorization();
+```
+
+### Middleware Pipeline
+
+```csharp
+var app = builder.Build();
+
+app.UseCors("PermitirBlazor");
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();  // API documentation UI
+}
+
+app.UseHttpsRedirection();
+app.UseAuthentication();  // Must come before UseAuthorization
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+```
+
+**Middleware Order:**
+1. CORS policy
+2. HTTPS redirection
+3. Authentication
+4. Authorization
+5. Controller routing
+
+### Controllers
+
+#### AuthController
+**Location:** `Controllers/AuthController.cs`
+
+**Responsibilities:**
+- User login and authentication
+- JWT token generation
+- User validation
+
+**Key Endpoints:**
+- `POST /api/auth/login` - User login
+- Returns JWT token on successful authentication
+
+**Token Generation Flow:**
+1. Validate user credentials against database
+2. Create security claims (user ID, username, role)
+3. Generate JWT token with configured secret key
+4. Return token in `LoginResponse` DTO
+
+#### ExpedienteDTOesController
+**Location:** `Controllers/ExpedienteDTOesController.cs`
+
+**Responsibilities:**
+- CRUD operations for expedientes (requests/cases)
+- Search and filtering
+- Status management
+- Business logic for request processing
+
+**Key Endpoints:**
+- `GET /api/expedientes` - List all expedientes
+- `GET /api/expedientes/{id}` - Get single expediente
+- `POST /api/expedientes` - Create new expediente
+- `PUT /api/expedientes/{id}` - Update expediente
+- `DELETE /api/expedientes/{id}` - Delete expediente
+
+#### CalendarioController
+**Location:** `Controllers/CalendarioController.cs`
+
+**Responsibilities:**
+- Calendar management
+- Non-working days (holidays)
+- Deadline calculations
+- Manual date adjustments
+
+**Key Endpoints:**
+- `GET /api/calendario` - Get calendar entries
+- `POST /api/calendario` - Add calendar entry
+- `PUT /api/calendario/{id}` - Update calendar entry
+- `DELETE /api/calendario/{id}` - Delete calendar entry
+
+#### RecursoRevisionController
+**Location:** `Controllers/RecursoRevisionController.cs`
+
+**Responsibilities:**
+- Review resource management
+- Document tracking
+- Statistical reports
+- Export functionality
+
+**Key Endpoints:**
+- Resource CRUD operations
+- Search and filtering
+- Statistics generation
+- Report exports
+
+### Data Access Layer
+
+#### SistemaSolicitudesContext
+**Location:** `Models/SistemaSolicitudesContext.cs`
+
+The `DbContext` serves as the data access layer:
+
+```csharp
+public partial class SistemaSolicitudesContext : DbContext
+{
+    public virtual DbSet<Calendario> Calendario { get; set; }
+    public virtual DbSet<Expediente> Expedientes { get; set; }
+    public virtual DbSet<Usuario> Usuarios { get; set; }
+    public virtual DbSet<DiaInhabilManual> DiaInhabilManual { get; set; }
+}
+```
+
+**Entity Configuration:**
+- Fluent API in `OnModelCreating`
+- Custom table mappings
+- Property configurations
+- Relationships and constraints
+
+### Entity Models
+
+#### Expediente Entity
+**Purpose:** Represents a request or case in the system
+
+**Key Properties:**
+- `Id` - Primary key
+- `Folio` - Unique case number (max 50 chars)
+- `NombreSolicitante` - Applicant name (max 50 chars)
+- `ContenidoSolicitud` - Request content (nvarchar(max))
+- `Estado` - Status (max 50 chars)
+- `FechaInicio` - Start date (datetime)
+- `SubsanaPrevencionReinicoTramite` - Process restart flag
+
+#### Usuario Entity
+**Purpose:** System users and authentication
+
+**Key Properties:**
+- `Id` - Primary key
+- `NombreUsuario` - Username (max 50 chars)
+- `password` - Hashed password (max 4000 chars)
+- `Rol` - User role (max 50 chars)
+
+#### Calendario Entity
+**Purpose:** Calendar entries for deadline tracking
+
+**Key Properties:**
+- `Id` - Primary key
+- Calendar-specific fields (dates, events)
+
+#### DiaInhabilManual Entity
+**Purpose:** Manually defined non-working days
+
+**Key Properties:**
+- Date information
+- Description or reason
+
+### PDF Generation
+
+**QuestPDF Integration:**
+- Community license configured in `Program.cs`
+- PDF generation services in `PDF/` directory
+- Document templates for reports
+- Export functionality for expedientes and statistics
+
+### Configuration Management
+
+#### appsettings.json
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(local); DataBase=SistemaSolicitudes; Trusted_Connection=True; TrustServerCertificate=True;"
+  },
+  "Jwt": {
+    "SecretKey": "B+UjX3CzV1xL5mPjYsQ0N6W7fZ9hRg2T",
+    "Issuer": "Issuer",
+    "Audience": "Audience"
+  }
+}
+```
+
+**Configuration Sections:**
+- `ConnectionStrings` - Database connections
+- `Jwt` - JWT authentication settings
+- `Logging` - Log levels and providers
+
+### API Documentation
+
+**Scalar API Reference:**
+- Accessible at `/scalar/v1` in development
+- Interactive API testing
+- Automatic endpoint discovery
+- Request/response examples
+- Schema documentation
+
+### Security Features
+
+#### Authentication
+- JWT Bearer token authentication
+- Token-based stateless auth
+- Configurable token lifetime
+- Secure token signing with secret key
+
+#### Authorization
+- Role-based access control
+- `[Authorize]` attributes on controllers/actions
+- Custom authorization policies (if implemented)
+
+#### Data Protection
+- HTTPS enforcement
+- Password hashing (recommended: use ASP.NET Core Identity)
+- SQL injection prevention via EF Core
+- Input validation
+
+### Error Handling
+
+**Standard Patterns:**
+- Try-catch blocks in controller actions
+- `ResponseAPI` wrapper for consistent responses
+- HTTP status codes (200, 400, 401, 404, 500)
+- Validation errors returned as BadRequest
+
+### Database Migrations
+
+**Entity Framework Core Migrations:**
+- Code-first approach
+- Migrations stored in `Migrations/` folder
+- Version control for schema changes
+
+**Common Commands:**
+```bash
+# Add new migration
+dotnet ef migrations add MigrationName
+
+# Update database
+dotnet ef database update
+
+# Remove last migration
+dotnet ef migrations remove
+```
+
+### Performance Considerations
+
+#### Database Queries
+- Async/await for all database operations
+- `AsNoTracking()` for read-only queries
+- Eager loading with `Include()` where appropriate
+- Avoid N+1 query problems
+
+#### Caching
+- Consider response caching for static data
+- Distributed caching for multi-instance deployments
+
+## Best Practices
+
+### API Design
+- RESTful conventions
+- Consistent endpoint naming
+- Proper HTTP verbs (GET, POST, PUT, DELETE)
+- Meaningful HTTP status codes
+
+### Code Organization
+- Separate concerns (Controllers, Models, Services)
+- Interface-based design
+- Dependency injection
+- Single Responsibility Principle
+
+### Security
+- Never commit secrets to source control
+- Use configuration providers (Azure Key Vault, etc.)
+- Implement proper password hashing
+- Validate all inputs
+- Use parameterized queries (EF Core handles this)
+
+## Next Steps
+
+- [Database Architecture](/architecture/database) - Understanding the data model
+- [Frontend Architecture](/architecture/frontend) - How the frontend consumes the API
+- [Development Setup](/development/setup) - Setting up the development environment

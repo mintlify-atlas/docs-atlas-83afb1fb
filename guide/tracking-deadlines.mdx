@@ -1,0 +1,251 @@
+---
+title: Tracking Deadlines
+description: Monitor request deadlines and manage upcoming due dates in the transparency request system
+---
+
+Effective deadline management is critical for transparency compliance. The Sistema de Seguimiento de Solicitudes provides powerful tools to track response deadlines and identify requests that are approaching their due dates.
+
+## Understanding Deadline Calculation
+
+The system automatically calculates response deadlines based on **business days** (días hábiles), excluding:
+
+<CardGroup cols={3}>
+  <Card title="Weekends" icon="calendar-xmark">
+    Saturdays and Sundays are not counted
+  </Card>
+  <Card title="National Holidays" icon="flag">
+    Official Mexican holidays (días festivos)
+  </Card>
+  <Card title="Custom Non-Working Days" icon="calendar-day">
+    Organization-specific holidays configured in the calendar
+  </Card>
+</CardGroup>
+
+### Official Holidays Recognized
+
+The system automatically excludes these dates:
+
+- January 1 (Año Nuevo)
+- February 5 (Día de la Constitución)
+- March 21 (Natalicio de Benito Juárez)
+- May 1 (Día del Trabajo)
+- September 16 (Día de la Independencia)
+- November 2 (Día de Muertos)
+- November 20 (Revolución Mexicana)
+- December 12, 24, 25, 31 (Holiday season)
+
+## Viewing Upcoming Deadlines
+
+The system provides a dedicated view for requests approaching their response deadline.
+
+<Steps>
+  <Step title="Access Deadline Events">
+    Navigate to **Ver Eventos de Vencimiento** from the Módulo de Solicitudes menu.
+  </Step>
+
+  <Step title="Review the Deadline Grid">
+    The system displays a table with the following information:
+    
+    - **Folio / Solicitante**: Request number and requester name
+    - **Tipo**: Request type (DAI or ARCO)
+    - **Límite**: Deadline date
+    - **Días restantes**: Remaining business days until deadline
+  </Step>
+
+  <Step title="Identify Priority Requests">
+    Requests are automatically sorted to show the most urgent deadlines first. Focus on requests with:
+    
+    - 3 or fewer days remaining
+    - Approaching limit dates
+    - Red or yellow warning indicators
+  </Step>
+</Steps>
+
+## Deadline Monitoring Features
+
+### Automatic Date Calculations
+
+When you create or modify a request, the system updates deadlines in real-time:
+
+```plaintext
+Scenario: DAI Request
+Start Date: Monday, March 10, 2026
+Base Deadline: 10 business days
+
+System calculates:
+→ Skip: March 15-16 (weekend)
+→ Skip: March 21 (holiday)
+→ Skip: March 22-23 (weekend)
+→ Final Deadline: March 24, 2026
+```
+
+### Extension Impact
+
+When you grant an extension (Ampliación = "Si"):
+
+| Request Type | Original | With Extension |
+|--------------|----------|----------------|
+| DAI | 10 days | 20 days |
+| ARCO | 20 days | 40 days |
+
+<Warning>
+  Extensions double the response time. Use them judiciously and only when necessary for complex requests.
+</Warning>
+
+### Prevention Period Deadlines
+
+When a request enters prevention (Prevención = "Si"):
+
+1. System calculates **10 business days** for requester to provide additional information
+2. If requester subsanates (provides info), the main deadline **restarts** from subsanation date
+3. If requester doesn't subsanate within 10 days, request can be dismissed
+
+## Exporting Deadline Reports
+
+You can export deadline data for offline analysis or reporting.
+
+<Steps>
+  <Step title="Click Export to Excel">
+    From the deadline events view, click the **Exportar a Excel** button with the download icon.
+  </Step>
+
+  <Step title="File Generated Automatically">
+    The system generates a CSV file named with the current date and time:
+    
+    ```plaintext
+    Solicitudes_Vencimiento_11-03-2026_14:30:15.xlsx
+    ```
+  </Step>
+
+  <Step title="Review Exported Data">
+    The file includes:
+    - Sequential number
+    - Folio and requester name
+    - Request type
+    - Deadline date
+    - Remaining business days
+  </Step>
+</Steps>
+
+## Calendar View
+
+The system includes a calendar visualization (CalendarioRadzen) for deadline management.
+
+### Calendar Features
+
+<Tabs>
+  <Tab title="Month View">
+    See all request deadlines for the current month at a glance.
+  </Tab>
+  <Tab title="Event Details">
+    Click on any date to see detailed information about requests due that day.
+  </Tab>
+  <Tab title="Color Coding">
+    Events are color-coded by urgency and request type for quick identification.
+  </Tab>
+</Tabs>
+
+## Calculating Business Days
+
+The system uses a sophisticated algorithm to calculate business days:
+
+```plaintext
+Function: CalcularDiasHabiles(inicio, fin)
+
+1. Start from inicio date
+2. Count days until fin date
+3. For each day:
+   - Skip if Saturday or Sunday
+   - Skip if in diasFestivos list
+   - Skip if in custom non-working days
+   - Otherwise, increment counter
+4. Return total business days
+```
+
+### Bidirectional Calculation
+
+The system can calculate both forward (deadline from start) and backward (days remaining to deadline):
+
+<CodeGroup>
+```plaintext Forward Calculation
+From: Start Date
+To: Calculate Deadline
+Result: Future date (10 or 20 business days ahead)
+```
+
+```plaintext Backward Calculation  
+From: Current Date
+To: Deadline Date
+Result: Remaining business days (positive or negative)
+```
+</CodeGroup>
+
+## Deadline Management Best Practices
+
+<AccordionGroup>
+  <Accordion title="Daily Deadline Review">
+    Check the **Ver Eventos de Vencimiento** page daily to stay on top of approaching deadlines. Set a routine time each morning to review.
+  </Accordion>
+
+  <Accordion title="Early Warning System">
+    Begin preparing responses when requests have 5+ days remaining, not at the last minute.
+  </Accordion>
+
+  <Accordion title="Extension Justification">
+    Document the reason for any extension. Extensions should be exceptional, not routine.
+  </Accordion>
+
+  <Accordion title="Prevention Tracking">
+    When setting a request to prevention, track it separately to ensure the 10-day subsanation period is monitored.
+  </Accordion>
+
+  <Accordion title="Response Date Recording">
+    Always update **Fecha de Respuesta** when you respond to a request. This creates an accurate historical record.
+  </Accordion>
+</AccordionGroup>
+
+## Understanding Overdue Requests
+
+When **Días restantes** shows a negative number:
+
+<Warning>
+  The request is overdue. This represents a compliance risk and should be addressed immediately.
+</Warning>
+
+### Handling Overdue Requests
+
+1. **Immediate Action**: Prioritize completing and responding to the request
+2. **Document Reason**: Record why the deadline was missed
+3. **Management Notification**: Inform supervisors of compliance issue
+4. **Process Review**: Identify bottlenecks that caused the delay
+5. **Prevention**: Implement safeguards to prevent future occurrences
+
+## Deadline Statistics
+
+The system tracks average response times:
+
+- **PromedioDiasRespuesta**: Calculates actual business days taken to respond
+- Used in reports to analyze performance
+- Helps identify efficiency trends
+
+<Tip>
+  Aim for responding well before the deadline. A good target is using only 70-80% of available time, leaving buffer for review and quality assurance.
+</Tip>
+
+## Integration with Request Status
+
+Deadlines automatically sync with request status:
+
+| Status | Deadline Tracking |
+|--------|-------------------|
+| INICIO | Monitoring begins |
+| PROCESO | Active tracking |
+| EN PREVENCIÓN | Prevention 10-day deadline active |
+| EN AMPLIACIÓN | Extended deadline active |
+| TERMINADA | Monitoring stops, response time calculated |
+
+## Next Steps
+
+- [Manage files and documents](/guide/managing-files) for comprehensive request tracking
+- [Generate reports](/guide/reports-statistics) to analyze deadline compliance
+- Learn about [creating requests](/guide/creating-requests) with proper deadline setup

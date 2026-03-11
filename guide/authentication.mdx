@@ -1,0 +1,111 @@
+---
+title: Authentication
+description: Learn how to log in and manage user sessions in the Sistema de Seguimiento de Solicitudes
+---
+
+The Sistema de Seguimiento de Solicitudes uses a secure authentication system to protect sensitive transparency request data. This guide will walk you through the login process and user roles.
+
+## Logging In
+
+To access the system, you'll need valid credentials provided by your system administrator.
+
+<Steps>
+  <Step title="Navigate to the Login Page">
+    Open your browser and go to the application URL. You'll be automatically redirected to the login page if you're not authenticated.
+  </Step>
+
+  <Step title="Enter Your Credentials">
+    Enter your **username** (Nombre de Usuario) and **password** (Contraseña) in the respective fields.
+    
+    ```plaintext
+    Nombre de Usuario: your_username
+    Contraseña: ********
+    ```
+  </Step>
+
+  <Step title="Click Accept">
+    Click the **Aceptar** button to submit your credentials. The button will show "Iniciando sesión..." while processing.
+  </Step>
+
+  <Step title="Access the Main Menu">
+    Upon successful authentication, you'll be redirected to the main menu (`/menu`) where you can access different modules.
+  </Step>
+</Steps>
+
+## User Roles and Permissions
+
+The system implements role-based access control with different permission levels:
+
+### CONSULTA Role (Read-Only)
+
+Users with the `CONSULTA` role have **read-only access**:
+
+- Can view request details and expedientes
+- Cannot edit or modify any information
+- Form fields and save buttons are disabled
+- A warning message displays: "Solo tienes permisos de lectura. No puedes editar este expediente."
+
+### Full Access Roles
+
+Users with full access can:
+
+- Create new transparency requests
+- Edit and update existing expedientes
+- Manage files and documents
+- Generate reports and statistics
+- Modify request status and deadlines
+
+<Note>
+  The system automatically determines your permissions based on your assigned role. If you need different access levels, contact your system administrator.
+</Note>
+
+## Authentication Features
+
+### Secure Token Management
+
+The system uses JWT (JSON Web Token) authentication:
+
+- Tokens are securely stored in the browser
+- Authentication state persists across page reloads
+- Automatic session management
+- Secure API communication
+
+### Session Handling
+
+- Sessions remain active during normal use
+- Inactive sessions may expire for security
+- You'll be redirected to login if your session expires
+- Use `forceLoad: true` for clean navigation after login
+
+## Troubleshooting Login Issues
+
+### Invalid Credentials
+
+If you see an error message after attempting to login:
+
+1. Verify your username and password are correct
+2. Check for typos or extra spaces
+3. Ensure Caps Lock is not enabled
+4. Contact your administrator if you've forgotten your password
+
+### Loading Issues
+
+If the login button shows "Iniciando sesión..." indefinitely:
+
+1. Check your internet connection
+2. Verify the API server is accessible
+3. Clear your browser cache and try again
+4. Contact technical support if the issue persists
+
+<Warning>
+  Never share your login credentials with others. Each user should have their own account for security and audit purposes.
+</Warning>
+
+## Next Steps
+
+Once logged in, you can:
+
+- [Create new transparency requests](/guide/creating-requests)
+- [Track request deadlines](/guide/tracking-deadlines)
+- [Manage files and documents](/guide/managing-files)
+- [Generate reports and statistics](/guide/reports-statistics)

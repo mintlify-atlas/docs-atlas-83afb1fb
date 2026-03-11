@@ -1,0 +1,224 @@
+---
+title: API Settings
+description: Configure the Sistema de Seguimiento de Solicitudes API
+---
+
+## Overview
+
+The API configuration is managed through `appsettings.json` and `Program.cs` in the `SolicitudesAPI` project.
+
+## appsettings.json Structure
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(local); DataBase=SistemaSolicitudes; Trusted_Connection=True; TrustServerCertificate=True;"
+  },
+  "Jwt": {
+    "SecretKey": "B+UjX3CzV1xL5mPjYsQ0N6W7fZ9hRg2T",
+    "Issuer": "Issuer",
+    "Audience": "Audience"
+  }
+}
+```
+
+## Configuration Sections
+
+### Logging
+
+Controls application logging behavior:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+```
+
+**Log Levels:**
+- `Trace` - Most detailed logging
+- `Debug` - Debug information
+- `Information` - General informational messages
+- `Warning` - Warning messages
+- `Error` - Error messages
+- `Critical` - Critical failures
+- `None` - No logging
+
+### AllowedHosts
+
+Specifies which hosts are allowed to access the API:
+
+```json
+{
+  "AllowedHosts": "*"
+}
+```
+
+For production, restrict to specific hosts:
+
+```json
+{
+  "AllowedHosts": "example.com;*.example.com"
+}
+```
+
+### ConnectionStrings
+
+Database connection configuration. See [Database Setup](/configuration/database-setup) for details.
+
+### JWT Configuration
+
+Authentication settings. See [JWT Authentication](/configuration/jwt-authentication) for details.
+
+## CORS Configuration
+
+The API includes CORS (Cross-Origin Resource Sharing) configuration to allow requests from the Blazor frontend.
+
+### Default CORS Policy
+
+Defined in `Program.cs`:
+
+```csharp
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirBlazor", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+```
+
+### Restricting CORS Origins
+
+For production, restrict CORS to specific origins:
+
+```csharp
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirBlazor", policy =>
+    {
+        policy.WithOrigins("https://yourdomain.com")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+```
+
+## OpenAPI / Swagger Configuration
+
+The API uses OpenAPI for documentation with Scalar UI.
+
+### Configuration in Program.cs
+
+```csharp
+builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+```
+
+### Development Environment
+
+OpenAPI and Scalar are enabled only in development:
+
+```csharp
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
+```
+
+Access the API documentation at:
+- OpenAPI spec: `https://localhost:5001/openapi/v1.json`
+- Scalar UI: `https://localhost:5001/scalar/v1`
+
+## QuestPDF License
+
+The application uses QuestPDF for PDF generation with a Community license.
+
+### Configuration
+
+Set in `Program.cs` before building the application:
+
+```csharp
+QuestPDF.Settings.License = LicenseType.Community;
+```
+
+<Note>
+  The Community license is free for open-source projects and non-commercial use. For commercial use, you may need a different license.
+</Note>
+
+## HTTPS Configuration
+
+The API enforces HTTPS redirection:
+
+```csharp
+app.UseHttpsRedirection();
+```
+
+### Development Certificates
+
+For development, trust the ASP.NET Core development certificate:
+
+```bash
+dotnet dev-certs https --trust
+```
+
+## Environment-Specific Settings
+
+Create environment-specific configuration files:
+
+- `appsettings.Development.json` - Development settings
+- `appsettings.Production.json` - Production settings
+- `appsettings.Staging.json` - Staging settings
+
+### Example: appsettings.Production.json
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Error"
+    }
+  },
+  "AllowedHosts": "yourdomain.com"
+}
+```
+
+## Middleware Pipeline Order
+
+The middleware is configured in the following order in `Program.cs`:
+
+1. CORS (`app.UseCors`)
+2. HTTPS Redirection (`app.UseHttpsRedirection`)
+3. Authentication (`app.UseAuthentication`)
+4. Controller routing (`app.MapControllers`)
+
+<Warning>
+  The order of middleware is important. Always place authentication before authorization and after routing.
+</Warning>
+
+## Controllers
+
+API controllers are automatically discovered and registered:
+
+```csharp
+builder.Services.AddControllers();
+// ...
+app.MapControllers();
+```
+
+All controllers in the project will be automatically mapped to routes.

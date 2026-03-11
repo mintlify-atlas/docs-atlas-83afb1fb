@@ -1,0 +1,428 @@
+---
+title: "Recursos Operations"
+description: "Detailed API endpoints for recursos de revisión operations"
+---
+
+## Resource Creation
+
+### Add Recurso de Revisión
+
+```http
+POST /api/RecursoRevision/Agregar
+```
+
+Creates a new recurso de revisión entry in the MT_RECURSO_REVISION table.
+
+**Request Body** (RecursoRevisionDTO):
+
+```json
+{
+  "numeroRecurso": "RR-2026-001",
+  "estatus": "En Trámite",
+  "resolucionSentido": "Confirma",
+  "contenidoSolicitud": "Solicitud de información...",
+  "nombreRecurrente": "Juan Pérez",
+  "sentidoContestacion": "Afirmativa",
+  "fechaAcuerdo": "2026-03-10T00:00:00",
+  "contenidoAcuerdo": "Se acuerda..."
+}
+```
+
+**Response** (200 OK):
+
+```json
+{
+  "mensaje": "Guardado correctamente"
+}
+```
+
+---
+
+### Create Expediente
+
+```http
+POST /api/RecursoRevision/Expediente
+```
+
+Creates a complete expediente entry in the MT_EXPEDIENTE_RECURSO table with all resource and expediente details.
+
+**Request Body** (ExpedienteRevisionDTO):
+
+```json
+{
+  "fechaNotificacionAdmision": "2026-03-01T00:00:00",
+  "respuestaSolicitud": "Respuesta proporcionada",
+  "fechaAcuerdo": "2026-03-05T00:00:00",
+  "contenidoAcuerdo": "Acuerdo de admisión...",
+  "materiaRecurso": "Acceso a la Información",
+  "razonInterposicion": "Inconformidad con la respuesta",
+  "fechaNotificacion": "2026-02-28T00:00:00",
+  "folioSolicitud": "SOL-2026-001",
+  "fechaContestacionRecurso": "2026-03-15T00:00:00",
+  "fechaAcuerdoFinal": "2026-03-20T00:00:00",
+  "contenidoAcuerdoFinal": "Se resuelve confirmar...",
+  "numeroRecurso": "RR-2026-001",
+  "estatus": "Concluido",
+  "resolucionSentido": "Confirma",
+  "contenidoSolicitud": "Solicitud de información...",
+  "nombreRecurrente": "Juan Pérez",
+  "sentidoContestacion": "Afirmativa"
+}
+```
+
+**Response** (200 OK):
+
+```json
+{
+  "mensaje": "Expediente guardado correctamente"
+}
+```
+
+---
+
+### Create Empty Expediente
+
+```http
+POST /api/RecursoRevision/Expediente/CrearVacio
+```
+
+Creates an empty expediente record and returns its ID for subsequent updates.
+
+**Request Body**: None
+
+**Response** (200 OK):
+
+```json
+{
+  "idExpedienteCreado": 123
+}
+```
+
+---
+
+## Resource Retrieval
+
+### Search Expedientes
+
+```http
+GET /api/RecursoRevision/Expediente/Buscar?folio={searchTerm}
+```
+
+Searches for expedientes by folio or resource number. Returns up to 20 matching results.
+
+**Query Parameters**:
+
+- `folio` (string): Search term to match against FOLIO_SOLICITUD or NUMERO_RECURSO (prefix match)
+
+**Example Request**:
+
+```
+GET /api/RecursoRevision/Expediente/Buscar?folio=SOL-2026
+```
+
+**Response** (200 OK):
+
+```json
+[
+  {
+    "idExpediente": 1,
+    "fechaNotificacionAdmision": "2026-03-01T00:00:00",
+    "respuestaSolicitud": "Respuesta proporcionada",
+    "fechaAcuerdo": "2026-03-05T00:00:00",
+    "contenidoAcuerdo": "Acuerdo de admisión...",
+    "materiaRecurso": "Acceso a la Información",
+    "razonInterposicion": "Inconformidad con la respuesta",
+    "fechaNotificacion": "2026-02-28T00:00:00",
+    "folioSolicitud": "SOL-2026-001",
+    "fechaContestacionRecurso": "2026-03-15T00:00:00",
+    "fechaAcuerdoFinal": "2026-03-20T00:00:00",
+    "contenidoAcuerdoFinal": "Se resuelve confirmar...",
+    "numeroRecurso": "RR-2026-001",
+    "estatus": "Concluido",
+    "resolucionSentido": "Confirma",
+    "contenidoSolicitud": "Solicitud de información...",
+    "nombreRecurrente": "Juan Pérez",
+    "sentidoContestacion": "Afirmativa"
+  }
+]
+```
+
+Returns empty array if no matches found or if folio parameter is empty.
+
+---
+
+## Resource Updates
+
+### Update Expediente
+
+```http
+PUT /api/RecursoRevision/Expediente/Actualizar
+```
+
+Updates an existing expediente. All fields from ExpedienteRevisionDTO can be updated.
+
+**Request Body** (ExpedienteRevisionDTO):
+
+```json
+{
+  "idExpediente": 1,
+  "fechaNotificacionAdmision": "2026-03-01T00:00:00",
+  "respuestaSolicitud": "Respuesta actualizada",
+  "fechaAcuerdo": "2026-03-05T00:00:00",
+  "contenidoAcuerdo": "Acuerdo actualizado...",
+  "materiaRecurso": "Acceso a la Información",
+  "razonInterposicion": "Inconformidad con la respuesta",
+  "fechaNotificacion": "2026-02-28T00:00:00",
+  "folioSolicitud": "SOL-2026-001",
+  "fechaContestacionRecurso": "2026-03-15T00:00:00",
+  "fechaAcuerdoFinal": "2026-03-20T00:00:00",
+  "contenidoAcuerdoFinal": "Se resuelve confirmar...",
+  "numeroRecurso": "RR-2026-001",
+  "estatus": "Concluido",
+  "resolucionSentido": "Confirma",
+  "contenidoSolicitud": "Solicitud de información...",
+  "nombreRecurrente": "Juan Pérez",
+  "sentidoContestacion": "Afirmativa"
+}
+```
+
+**Response** (200 OK):
+
+```json
+{
+  "mensaje": "Expediente actualizado correctamente"
+}
+```
+
+**Error Response** (400 Bad Request):
+
+```
+IdExpediente inválido
+```
+
+---
+
+## PDF Operations
+
+### Generate PDF Report
+
+```http
+POST /api/RecursoRevision/Expediente/PDF
+```
+
+Generates a PDF report for an expediente using the ExpedienteRevisionPDF document generator.
+
+**Request Body** (ExpedienteRevisionDTO):
+
+```json
+{
+  "idExpediente": 1,
+  "numeroRecurso": "RR-2026-001",
+  "nombreRecurrente": "Juan Pérez",
+  "materiaRecurso": "Acceso a la Información",
+  "folioSolicitud": "SOL-2026-001",
+  "estatus": "Concluido",
+  "resolucionSentido": "Confirma"
+  // ... other fields
+}
+```
+
+**Response** (200 OK):
+
+Returns PDF file with:
+- Content-Type: `application/pdf`
+- Filename: `ExpedienteRevision.pdf`
+
+**Error Response** (500 Internal Server Error):
+
+```json
+{
+  "error": "Error generando PDF",
+  "detail": "Error message details"
+}
+```
+
+---
+
+### Upload PDF File
+
+```http
+POST /api/RecursoRevision/Expediente/SubirPDF
+```
+
+Uploads a PDF file and associates it with an expediente. Stores the file binary data in MT_EXPEDIENTE_ARCHIVOS table.
+
+**Request** (multipart/form-data):
+
+- `idExpediente` (int): The expediente ID
+- `archivo` (file): The PDF file to upload
+
+**Response** (200 OK):
+
+```json
+{
+  "mensaje": "PDF guardado"
+}
+```
+
+**Error Response** (400 Bad Request):
+
+```
+Archivo vacío.
+```
+
+---
+
+### List PDFs for Expediente
+
+```http
+GET /api/RecursoRevision/Expediente/PDFs?idExpediente={id}
+```
+
+Retrieves a list of all PDF files associated with a specific expediente.
+
+**Query Parameters**:
+
+- `idExpediente` (int): The expediente ID
+
+**Response** (200 OK):
+
+```json
+[
+  {
+    "idArchivo": 1,
+    "nombreArchivo": "acuerdo_final.pdf"
+  },
+  {
+    "idArchivo": 2,
+    "nombreArchivo": "notificacion.pdf"
+  }
+]
+```
+
+---
+
+### Download PDF File
+
+```http
+GET /api/RecursoRevision/Expediente/PDF/{idArchivo}
+```
+
+Downloads a specific PDF file by its archive ID.
+
+**Path Parameters**:
+
+- `idArchivo` (int): The archive ID
+
+**Response** (200 OK):
+
+Returns PDF file with:
+- Content-Type: `application/pdf`
+- Filename: Original uploaded filename
+
+**Error Response** (404 Not Found):
+
+Returned when the archive ID doesn't exist.
+
+---
+
+### List All PDFs
+
+```http
+GET /api/RecursoRevision/Expediente/PDFs/Todos
+```
+
+Retrieves all PDF files in the system, sorted by registration date (most recent first).
+
+**Response** (200 OK):
+
+```json
+[
+  {
+    "idArchivo": 5,
+    "nombreArchivo": "expediente_reciente.pdf",
+    "fechaRegistro": "2026-03-11 10:30:00"
+  },
+  {
+    "idArchivo": 4,
+    "nombreArchivo": "acuerdo.pdf",
+    "fechaRegistro": "2026-03-10 14:20:00"
+  }
+]
+```
+
+---
+
+## Statistics
+
+### Get Statistics
+
+```http
+GET /api/RecursoRevision/Estadisticas?mes={month}&anio={year}&materia={subject}
+```
+
+Retrieves statistical information about recursos de revisión with optional filters. Statistics are calculated from the MT_EXPEDIENTE_RECURSO table.
+
+**Query Parameters** (all optional):
+
+- `mes` (int): Filter by month (1-12)
+- `anio` (int): Filter by year
+- `materia` (string): Filter by subject matter (e.g., "Acceso a la Información")
+
+**Example Request**:
+
+```
+GET /api/RecursoRevision/Estadisticas?anio=2026&materia=Acceso%20a%20la%20Información
+```
+
+**Response** (200 OK):
+
+```json
+[
+  {
+    "concepto": "En Trámite",
+    "cantidad": 5,
+    "recursos": "(RR-2026-001) (RR-2026-002) (RR-2026-005)"
+  },
+  {
+    "concepto": "Concluido",
+    "cantidad": 15,
+    "recursos": "(RR-2026-003) (RR-2026-004) (RR-2026-006)"
+  },
+  {
+    "concepto": "Resolución en sentido confirma",
+    "cantidad": 8,
+    "recursos": "(RR-2026-003) (RR-2026-007)"
+  },
+  {
+    "concepto": "Resolución en sentido sobresee",
+    "cantidad": 3,
+    "recursos": "(RR-2026-008)"
+  },
+  {
+    "concepto": "Resolución en sentido modifica",
+    "cantidad": 2,
+    "recursos": "(RR-2026-009) (RR-2026-010)"
+  },
+  {
+    "concepto": "Resolución en sentido revoca",
+    "cantidad": 1,
+    "recursos": "(RR-2026-011)"
+  },
+  {
+    "concepto": "Resolución en sentido dar respuesta",
+    "cantidad": 1,
+    "recursos": "(RR-2026-012)"
+  }
+]
+```
+
+**Statistics Categories**:
+
+1. **By Status**: En Trámite, Concluido
+2. **By Resolution**: Confirma, Sobresee, Modifica, Revoca, Dar Respuesta
+
+Each statistic includes:
+- `concepto`: The category name
+- `cantidad`: Count of matching resources
+- `recursos`: Space-separated list of resource numbers in parentheses

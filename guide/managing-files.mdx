@@ -1,0 +1,339 @@
+---
+title: Managing Files and Documents
+description: Upload, organize, and manage files in the digital expediente for transparency requests and appeal resources
+---
+
+The Sistema de Seguimiento de Solicitudes includes a comprehensive digital file management system (expediente digital) for both transparency requests and appeal resources (recursos de revisión). This guide covers file operations and document organization.
+
+## Digital Expediente Overview
+
+The system maintains digital files for two types of cases:
+
+<CardGroup cols={2}>
+  <Card title="Solicitudes" icon="file-lines">
+    Transparency requests (DAI/ARCO) and their supporting documents
+  </Card>
+  <Card title="Recursos de Revisión" icon="scale-balanced">
+    Appeals filed against responses, with complete case documentation
+  </Card>
+</CardGroup>
+
+## Managing Appeal Resource Files
+
+The appeal resource module (Recursos de Revisión) provides comprehensive document management.
+
+### Creating a Digital Expediente
+
+<Steps>
+  <Step title="Navigate to Digital Expediente">
+    From the main menu, go to **Recursos de Revisión** → **Expediente Digital del Recurso de Revisión**.
+  </Step>
+
+  <Step title="Complete Case Information">
+    Fill in the expediente details:
+    
+    **Basic Information:**
+    - **Número de Recurso**: Appeal resource number
+    - **Folio**: Original request folio
+    - **Nombre Recurrente**: Name of appellant
+    - **Estatus**: "En trámite" or "Concluido"
+    
+    **Request Details:**
+    - **Contenido Solicitud**: Content of original request
+    - **Respuesta Solicitud**: Response that was given
+    - **Materia**: "DAI" or "DP" (Datos Personales)
+  </Step>
+
+  <Step title="Add Procedural Dates">
+    Record key dates in the appeal process:
+    
+    - **Fecha Notificación Admisión**: Admission notification date
+    - **Fecha Acuerdo**: Agreement date
+    - **Fecha Contestación**: Response date
+    - **Fecha Acuerdo Final**: Final agreement date
+  </Step>
+
+  <Step title="Document Resolution">
+    Specify the resolution details:
+    
+    - **Resolución en Sentido**: Select from:
+      - Confirma (Confirms original response)
+      - Sobresee (Dismisses appeal)
+      - Modifica (Modifies response)
+      - Revoca (Revokes response)
+      - Dar Respuesta (Order to provide response)
+    
+    - **Contenido Acuerdo**: Agreement content
+    - **Contenido Acuerdo Final**: Final agreement content
+  </Step>
+
+  <Step title="Save the Expediente">
+    Click **Guardar** to save the expediente record. The system will:
+    
+    - Create a unique `IdExpediente` in the database
+    - Offer to generate a PDF of the expediente
+    - Enable file attachment functionality
+  </Step>
+</Steps>
+
+### Uploading PDF Documents
+
+Once an expediente is created, you can attach supporting PDF documents.
+
+<Steps>
+  <Step title="Open Upload Panel">
+    Click the **Agregar PDF** button to open the file upload panel.
+  </Step>
+
+  <Step title="Select PDF File">
+    Click the file input and choose a PDF file from your computer:
+    
+    <Note>
+      Only PDF files are accepted. The system validates file type on upload.
+    </Note>
+  </Step>
+
+  <Step title="Confirm File Selection">
+    The system displays the selected filename:
+    
+    ```plaintext
+    Archivo seleccionado: expediente_recurso_123.pdf
+    ```
+  </Step>
+
+  <Step title="Upload the File">
+    Click **Guardar** to upload the PDF. The system:
+    
+    - Validates file type (must be PDF)
+    - Creates expediente if it doesn't exist
+    - Uploads file to server via multipart form data
+    - Associates file with `IdExpediente`
+    - Stores file metadata in `MT_EXPEDIENTE_ARCHIVOS` table
+  </Step>
+</Steps>
+
+### Viewing Saved Documents
+
+Access all PDFs associated with expedientes:
+
+<Steps>
+  <Step title="Open Documents List">
+    Click **Documentos Guardados** to view all uploaded files.
+  </Step>
+
+  <Step title="Review File List">
+    The system displays a table with:
+    - **Nombre**: Original filename of the PDF
+    - **Acciones**: Download button for each file
+  </Step>
+
+  <Step title="Download Files">
+    Click **Descargar** next to any file to download it. The system:
+    
+    - Retrieves file from database by `IdArchivo`
+    - Preserves original filename
+    - Sends file as PDF download
+  </Step>
+</Steps>
+
+## Generating PDF Reports
+
+The system can generate formatted PDF reports from expediente data.
+
+### Expediente PDF Generation
+
+<Steps>
+  <Step title="Complete Expediente Data">
+    Ensure all required fields are filled in the digital expediente form.
+  </Step>
+
+  <Step title="Generate PDF">
+    Click the **Descargar PDF** button (with PDF icon).
+  </Step>
+
+  <Step title="Download Generated Report">
+    The system:
+    - Calls API endpoint: `POST api/RecursoRevision/Expediente/PDF`
+    - Generates formatted PDF with all expediente data
+    - Downloads file as `ExpedienteRevision.pdf`
+  </Step>
+</Steps>
+
+<Tip>
+  After saving an expediente, the system prompts: "¿Desea generar PDF?" Click **OK** to immediately generate the PDF report.
+</Tip>
+
+## File Storage Architecture
+
+Understanding how files are stored:
+
+```plaintext
+Database Tables:
+
+┌─────────────────────────┐
+│  MT_EXPEDIENTE          │  Expediente metadata
+│  - IdExpediente (PK)    │
+│  - NumeroRecurso        │
+│  - FolioSolicitud       │
+│  - ResolucionSentido    │
+│  - ...                  │
+└─────────────────────────┘
+           │
+           │ 1:N
+           ▼
+┌─────────────────────────┐
+│  MT_EXPEDIENTE_ARCHIVOS │  File attachments
+│  - IdArchivo (PK)       │
+│  - IdExpediente (FK)    │
+│  - NombreArchivo        │
+│  - ContenidoPDF (BLOB)  │
+└─────────────────────────┘
+```
+
+### File Size Considerations
+
+<Warning>
+  The system uses `long.MaxValue` for file upload size limit. While this allows large files, be mindful of:
+  - Server memory constraints
+  - Database storage limits
+  - Network transfer times
+</Warning>
+
+Best practices:
+- Keep individual PDFs under 10 MB when possible
+- Use compression for large documents
+- Split very large files into logical sections
+
+## File Organization Best Practices
+
+<AccordionGroup>
+  <Accordion title="Consistent Naming Conventions">
+    Use clear, consistent filenames that include:
+    - Resource or request number
+    - Document type (e.g., "acuerdo", "contestacion")
+    - Date in YYYY-MM-DD format
+    
+    Example: `RR-123-2026_acuerdo_final_2026-03-15.pdf`
+  </Accordion>
+
+  <Accordion title="Complete Before Uploading">
+    Fill in all expediente data fields before uploading files. This ensures proper association and searchability.
+  </Accordion>
+
+  <Accordion title="Verify PDF Quality">
+    Before uploading, ensure PDFs:
+    - Are not password-protected
+    - Have readable text (OCR if scanned)
+    - Are properly oriented
+    - Have reasonable file size
+  </Accordion>
+
+  <Accordion title="Regular Backups">
+    While files are stored in the database, maintain external backups of critical documents for disaster recovery.
+  </Accordion>
+</AccordionGroup>
+
+## Automatic Expediente Creation
+
+If you try to upload a PDF without first creating an expediente:
+
+```plaintext
+System behavior:
+1. Detects IdExpediente = 0
+2. Calls: POST api/RecursoRevision/Expediente/CrearVacio
+3. Creates empty expediente record
+4. Returns new IdExpediente
+5. Associates uploaded PDF with new expediente
+```
+
+<Note>
+  This feature ensures files are never orphaned. However, it's better practice to create the expediente first with complete data.
+</Note>
+
+## File Download Process
+
+When downloading files:
+
+1. **Request**: GET `api/RecursoRevision/Expediente/PDF/{idArchivo}`
+2. **Server retrieves**: File content from database
+3. **Headers sent**:
+   - `Content-Disposition`: Includes original filename
+   - `Content-Type`: `application/pdf`
+4. **Client receives**: Binary PDF data
+5. **Browser downloads**: Using original filename
+
+### JavaScript Download Function
+
+The system uses this approach:
+
+```javascript
+downloadFileFromByteArray({
+  ByteArray: pdfBytes,
+  FileName: "original_name.pdf",
+  ContentType: "application/pdf"
+})
+```
+
+## Viewing Document History
+
+All uploaded files are tracked with:
+
+- **IdArchivo**: Unique identifier
+- **NombreArchivo**: Original filename
+- **Upload timestamp** (if implemented)
+- **Associated IdExpediente**
+
+Query all documents via:
+```plaintext
+GET api/RecursoRevision/Expediente/PDFs/Todos
+```
+
+Returns:
+```json
+[
+  {
+    "IdArchivo": 1,
+    "NombreArchivo": "expediente_recurso_123.pdf"
+  },
+  {
+    "IdArchivo": 2,
+    "NombreArchivo": "acuerdo_final_456.pdf"
+  }
+]
+```
+
+## Integration with Request Module
+
+While the file management is most developed in the Recursos de Revisión module, the same principles apply to request expedientes:
+
+- Each request (expediente) can have associated files
+- Files support the request lifecycle
+- Documents are preserved for audit trails
+- Reports can reference uploaded documents
+
+## Troubleshooting File Issues
+
+### Upload Failures
+
+If file upload fails:
+
+1. **Check file type**: Only PDFs are accepted
+2. **Verify file size**: Extremely large files may timeout
+3. **Network connection**: Ensure stable internet
+4. **Server status**: Confirm API is accessible
+5. **Browser console**: Check for JavaScript errors
+
+### Download Problems
+
+If downloads don't work:
+
+1. **Popup blockers**: Allow downloads from the site
+2. **Browser settings**: Check download permissions
+3. **File existence**: Verify file wasn't deleted from database
+4. **Network**: Ensure connection during download
+
+## Next Steps
+
+- [Generate reports and statistics](/guide/reports-statistics) using expediente data
+- [Track deadlines](/guide/tracking-deadlines) for timely case resolution
+- Learn about [creating requests](/guide/creating-requests) that generate expedientes

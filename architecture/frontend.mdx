@@ -1,0 +1,270 @@
+---
+title: Frontend Architecture
+description: Blazor WebAssembly frontend architecture and components
+---
+
+## Blazor WebAssembly Frontend
+
+The frontend is built using **Blazor WebAssembly**, a client-side web framework that runs .NET code directly in the browser using WebAssembly.
+
+### Project Structure
+
+```
+Sistema de Seguimiento de Solicitudes/
+├── Layout/                    # Layout components
+├── Models/                    # Frontend-specific models
+├── Pages/                     # Razor component pages
+│   ├── Modulo Solicitudes/   # Request management pages
+│   ├── Modulos/              # Module pages
+│   └── RecursosRevision/     # Review resource pages
+├── Services/                  # Service layer for API calls
+│   └── LoginServices/        # Authentication services
+├── wwwroot/                   # Static assets
+├── App.razor                  # Root component
+├── Program.cs                 # Application entry point
+└── _Imports.razor             # Global using directives
+```
+
+### Technology Stack
+
+#### Core Framework
+- **.NET 9.0** with Blazor WebAssembly SDK
+- **C# 11** language features
+- **Nullable reference types** enabled
+- **Implicit usings** enabled
+
+#### UI Component Libraries
+
+**MudBlazor (v8.6.0)**
+- Material Design components
+- Rich set of UI controls
+- Responsive grid system
+- Built-in themes and styling
+
+**Radzen Blazor (v7.0.7)**
+- Additional specialized components
+- Calendar and scheduling components
+- Data visualization
+- Form controls
+
+**CurrieTechnologies.Razor.SweetAlert2 (v5.6.0)**
+- Beautiful, responsive alerts
+- Confirmation dialogs
+- Toast notifications
+
+#### Other Libraries
+- **ClosedXML (v0.105.0)** - Excel file generation
+- **Microsoft.IdentityModel.JsonWebTokens (v8.11.0)** - JWT token handling
+
+### Application Entry Point
+
+The `Program.cs` file configures the Blazor WebAssembly host:
+
+```csharp
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
+```
+
+**Key Configuration:**
+- Root component mounted to `#app` element
+- HeadOutlet for dynamic head content
+- Base address: `https://localhost:7123/` (API endpoint)
+
+### Service Registration
+
+#### HTTP Client
+```csharp
+builder.Services.AddScoped(sp => 
+    new HttpClient { BaseAddress = new Uri("https://localhost:7123/") });
+```
+
+#### Application Services
+```csharp
+// Domain services
+builder.Services.AddScoped<IExpedienteService, ExpedienteService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<ICalendarioService, CalendarioService>();
+builder.Services.AddScoped<AuthService>();
+
+// UI services
+builder.Services.AddSweetAlert2();
+builder.Services.AddRadzenComponents();
+```
+
+### Authentication Architecture
+
+#### Custom Authentication State Provider
+
+The application uses a custom `AuthenticationStateProvider` for JWT-based authentication:
+
+```csharp
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
+    provider.GetRequiredService<CustomAuthenticationStateProvider>());
+
+builder.Services.AddAuthorizationCore();
+```
+
+**Authentication Flow:**
+1. User logs in through `Login.razor`
+2. `AuthService` calls API and receives JWT token
+3. Token stored in browser (localStorage/sessionStorage)
+4. `CustomAuthenticationStateProvider` reads token
+5. Token included in subsequent API requests
+6. Authorization state propagates to all components
+
+### Service Layer Pattern
+
+The frontend uses interface-based services to communicate with the API:
+
+#### IExpedienteService
+- Manages request/case data (expedientes)
+- CRUD operations for requests
+- Search and filtering
+- Status updates
+
+#### IUsuarioService
+- User management operations
+- User CRUD operations
+- Role management
+- Password changes
+
+#### ICalendarioService
+- Calendar and date management
+- Holiday/non-working day tracking
+- Deadline calculations
+
+#### AuthService
+- User authentication
+- Login/logout operations
+- Token management
+- Session handling
+
+### Page Structure
+
+#### Modulo Solicitudes (Request Module)
+
+**Key Pages:**
+- `Login.razor` - User authentication
+- `Inicio de Solicitudes.razor` - Create new requests
+- `Indice de Expedientes.razor` - List all requests
+- `Detalles de Expediente.razor` - View request details
+- `Historial de Solicitudes.razor` - Request history
+- `CalendarioRadzen.razor` - Calendar management
+- `CreacionUsuarios.razor` - User creation
+- `VerEventosVencimiento.razor` - View deadlines
+
+#### RecursosRevision (Review Resources Module)
+
+**Key Pages:**
+- `RecursoRevisionRegistroMenu.razor` - Review resource menu
+- `AgregarRecursoRevision.razor` - Add review resources
+- `RecursoRevisionBusqueda.razor` - Search review resources
+- `RecursoRevisionExpedienteDigital.razor` - Digital case file
+- `RecursosRevisionEstadisticas.razor` - Statistics and reports
+
+### Component Communication
+
+#### Parent-Child Communication
+- Parameters (`[Parameter]`) for passing data down
+- EventCallbacks for child-to-parent communication
+- Cascading parameters for deep hierarchies
+
+#### State Management
+- Service-based state (scoped services)
+- `AuthenticationState` cascading parameter
+- Browser storage for persistence
+
+### Progressive Web App (PWA)
+
+The application is configured as a PWA:
+
+```xml
+<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+```
+
+**PWA Features:**
+- Offline capability
+- Install to home screen
+- Service worker for caching
+- App-like experience on mobile
+
+**Service Worker Files:**
+- `wwwroot/service-worker.js` - Development service worker
+- `wwwroot/service-worker.published.js` - Production service worker
+
+### HTTP Communication
+
+All API communication uses `HttpClient` with JSON serialization:
+
+**Typical Service Method:**
+```csharp
+public async Task<ResponseAPI<ExpedienteDTO>> GetExpedienteAsync(int id)
+{
+    var response = await _httpClient.GetAsync($"api/expedientes/{id}");
+    return await response.Content.ReadFromJsonAsync<ResponseAPI<ExpedienteDTO>>();
+}
+```
+
+### Error Handling
+
+- SweetAlert2 for user-friendly error messages
+- Try-catch blocks in service methods
+- HTTP status code checking
+- Standardized `ResponseAPI` wrapper
+
+### Styling & Theming
+
+- Component-specific CSS files (`.razor.css`)
+- Scoped CSS for component isolation
+- MudBlazor theming system
+- Custom CSS in `wwwroot/css/`
+
+### Asset Management
+
+**wwwroot/ Directory:**
+- Static files served directly
+- Images, CSS, JavaScript
+- Service worker files
+- App manifest for PWA
+- `auditoria.js` - Custom audit functionality
+
+### Build & Deployment
+
+**Build Output:**
+- WebAssembly modules (`.wasm`)
+- .NET assemblies (`.dll`)
+- Static assets
+- All published to `bin/Release/net9.0/publish/wwwroot/`
+
+**Hosting Options:**
+- Static file hosting (Azure Static Web Apps, Netlify, etc.)
+- IIS with static file serving
+- Any web server capable of serving static files
+
+## Best Practices
+
+### Performance
+- Lazy loading for large components
+- Virtual scrolling for long lists
+- Debouncing for search inputs
+- Minimal re-renders with `ShouldRender()`
+
+### Security
+- JWT tokens stored securely
+- HTTPS-only communication
+- Input validation on forms
+- XSS prevention (automatic in Blazor)
+
+### Code Organization
+- One component per file
+- Services in separate interfaces
+- Shared models in SolicitudesShared project
+- Consistent naming conventions
+
+## Next Steps
+
+- [Backend Architecture](/architecture/backend) - Understanding the API
+- [Database Architecture](/architecture/database) - Data layer details
+- [Development Setup](/development/setup) - Setting up your environment

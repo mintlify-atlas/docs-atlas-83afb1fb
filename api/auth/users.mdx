@@ -1,0 +1,281 @@
+---
+title: "User Management"
+description: "Endpoints for managing user accounts"
+---
+
+## List All Users
+
+<api method="GET" url="/api/auth/Lista_Usuarios" />
+
+Retrieve a list of all users in the system.
+
+### Authentication
+
+No authentication specified (should be protected in production).
+
+### Response
+
+<ResponseField name="Exito" type="boolean">
+  Indicates whether the operation was successful.
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Error message if operation failed.
+</ResponseField>
+
+<ResponseField name="Data" type="array">
+  Array of user objects.
+  
+  <Expandable title="UsuariosDTO properties">
+    <ResponseField name="Id" type="integer">
+      Unique user identifier.
+    </ResponseField>
+    
+    <ResponseField name="NombreUsuario" type="string">
+      Username (max 100 characters).
+    </ResponseField>
+    
+    <ResponseField name="password" type="string">
+      Hashed password.
+    </ResponseField>
+    
+    <ResponseField name="Rol" type="string">
+      User's assigned role.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://api.example.com/api/auth/Lista_Usuarios \
+  -H "Content-Type: application/json"
+```
+
+```json Response
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": [
+    {
+      "Id": 1,
+      "NombreUsuario": "admin",
+      "password": "$2a$11$hashed...",
+      "Rol": "Admin"
+    },
+    {
+      "Id": 2,
+      "NombreUsuario": "user1",
+      "password": "$2a$11$hashed...",
+      "Rol": "User"
+    }
+  ]
+}
+```
+</CodeGroup>
+
+---
+
+## Get User by ID
+
+<api method="GET" url="/api/auth/Buscar/{id}" />
+
+Retrieve a specific user by their ID.
+
+### Authentication
+
+No authentication specified (should be protected in production).
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the user to retrieve.
+</ParamField>
+
+### Response
+
+<ResponseField name="Exito" type="boolean">
+  Indicates whether the user was found.
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Error message if user not found: "No se encontró el expediente"
+</ResponseField>
+
+<ResponseField name="Data" type="object">
+  User object.
+  
+  <Expandable title="UsuariosDTO properties">
+    <ResponseField name="NombreUsuario" type="string">
+      Username (max 100 characters).
+    </ResponseField>
+    
+    <ResponseField name="password" type="string">
+      Hashed password.
+    </ResponseField>
+    
+    <ResponseField name="Rol" type="string">
+      User's assigned role.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://api.example.com/api/auth/Buscar/1 \
+  -H "Content-Type: application/json"
+```
+
+```json Response (Success)
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": {
+    "NombreUsuario": "admin",
+    "password": "$2a$11$hashed...",
+    "Rol": "Admin"
+  }
+}
+```
+
+```json Response (Not Found)
+{
+  "Exito": false,
+  "Mensaje": "No se encontró el expediente",
+  "Data": null
+}
+```
+</CodeGroup>
+
+---
+
+## Delete User
+
+<api method="DELETE" url="/api/auth/Eliminar/{id}" />
+
+Delete a user from the system.
+
+### Authentication
+
+No authentication specified (should be protected in production).
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the user to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="Exito" type="boolean">
+  Indicates whether the deletion was successful.
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Error message if user not found: "No se pudo encontrar el expediente"
+</ResponseField>
+
+<ResponseField name="Data" type="integer">
+  Not used in this endpoint.
+</ResponseField>
+
+### Example
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE https://api.example.com/api/auth/Eliminar/1 \
+  -H "Content-Type: application/json"
+```
+
+```json Response (Success)
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": null
+}
+```
+
+```json Response (Not Found)
+{
+  "Exito": false,
+  "Mensaje": "No se pudo encontrar el expediente",
+  "Data": null
+}
+```
+</CodeGroup>
+
+---
+
+## Change Password
+
+<api method="POST" url="/api/auth/CambiarContrasena" />
+
+Update a user's password.
+
+### Authentication
+
+No authentication specified (should be protected in production).
+
+### Request Body
+
+<ParamField body="UsuarioId" type="integer" required>
+  The ID of the user whose password will be changed.
+</ParamField>
+
+<ParamField body="NuevaContrasena" type="string" required>
+  The new password. Will be securely hashed before storage.
+</ParamField>
+
+### Response
+
+<ResponseField name="Exito" type="boolean">
+  Indicates whether the password was successfully updated.
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Status message: "Contraseña actualizada correctamente" on success, or "Usuario no encontrado" if user not found.
+</ResponseField>
+
+<ResponseField name="Data" type="boolean">
+  Returns `true` on successful password update.
+</ResponseField>
+
+### Example
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/api/auth/CambiarContrasena \
+  -H "Content-Type: application/json" \
+  -d '{
+    "UsuarioId": 1,
+    "NuevaContrasena": "NewSecurePassword456"
+  }'
+```
+
+```json Response (Success)
+{
+  "Exito": true,
+  "Data": true,
+  "Mensaje": "Contraseña actualizada correctamente."
+}
+```
+
+```json Response (User Not Found - 404)
+{
+  "Exito": false,
+  "Data": null,
+  "Mensaje": "Usuario no encontrado."
+}
+```
+</CodeGroup>
+
+## Security Considerations
+
+- All password operations use ASP.NET Core Identity's `PasswordHasher`
+- Passwords are never stored or transmitted in plain text
+- These endpoints should be protected with authentication and authorization in production
+- Consider implementing rate limiting on authentication endpoints
+- The Lista_Usuarios endpoint exposes hashed passwords - consider removing this in production

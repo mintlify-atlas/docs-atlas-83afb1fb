@@ -1,0 +1,95 @@
+---
+title: "Register User"
+api: "POST /api/auth/register"
+description: "Create a new user account"
+---
+
+## Description
+
+Creates a new user account in the system. Passwords are automatically hashed using ASP.NET Core Identity's PasswordHasher before storage.
+
+## Authentication
+
+No authentication required (public endpoint).
+
+## Request Body
+
+<ParamField body="NombreUsuario" type="string" required>
+  Username for the new account. Maximum length: 100 characters. Must be unique.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  User's password. Will be securely hashed before storage.
+</ParamField>
+
+<ParamField body="Rol" type="string" required>
+  Role assigned to the user (e.g., "Admin", "User", "Manager").
+</ParamField>
+
+## Response
+
+### Success Response (200 OK)
+
+<ResponseField name="message" type="string">
+  Success message: "Usuario creado con éxito"
+</ResponseField>
+
+### Error Response (400 Bad Request)
+
+<ResponseField name="message" type="string">
+  Error message: "Error al crear el usuario"
+</ResponseField>
+
+## Examples
+
+### Successful Registration
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "NombreUsuario": "johndoe",
+    "password": "SecurePassword123",
+    "Rol": "User"
+  }'
+```
+
+```json Response
+{
+  "message": "Usuario creado con éxito"
+}
+```
+</CodeGroup>
+
+### Failed Registration
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "NombreUsuario": "",
+    "password": "password123",
+    "Rol": "User"
+  }'
+```
+
+```json Response (400 Bad Request)
+{
+  "message": "Error al crear el usuario"
+}
+```
+</CodeGroup>
+
+## Security Notes
+
+- Passwords are hashed using `PasswordHasher<Usuario>` from ASP.NET Core Identity
+- Original passwords are never stored in plain text
+- Password verification uses secure comparison algorithms
+
+## Validation Rules
+
+- **NombreUsuario**: Required, maximum 100 characters
+- **password**: Required
+- **Rol**: Required

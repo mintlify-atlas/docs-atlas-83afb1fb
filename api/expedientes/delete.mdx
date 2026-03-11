@@ -1,0 +1,95 @@
+---
+title: 'Eliminar Expediente'
+api: 'DELETE /api/Expedientes/Eliminar/{id}'
+description: 'Elimina un expediente del sistema'
+---
+
+## Descripción
+
+Este endpoint elimina permanentemente un expediente del sistema. Esta operación no puede deshacerse.
+
+## Endpoint
+
+```
+DELETE /api/Expedientes/Eliminar/{id}
+```
+
+## Parámetros de Ruta
+
+<ParamField path="id" type="integer" required>
+  ID del expediente a eliminar
+</ParamField>
+
+## Respuesta
+
+### Estructura de la respuesta
+
+<ResponseField name="Exito" type="boolean" required>
+  Indica si la operación fue exitosa
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Mensaje descriptivo en caso de error
+</ResponseField>
+
+<ResponseField name="Data" type="integer">
+  Siempre retorna 0 (no se utiliza en esta operación)
+</ResponseField>
+
+## Ejemplo de Solicitud
+
+```bash
+curl -X DELETE "https://api.ejemplo.com/api/Expedientes/Eliminar/1" \
+  -H "Content-Type: application/json"
+```
+
+## Ejemplo de Respuesta Exitosa
+
+```json
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": 0
+}
+```
+
+## Ejemplo de Respuesta con Error - Expediente No Encontrado
+
+```json
+{
+  "Exito": false,
+  "Mensaje": "No se pudo encontrar el expediente",
+  "Data": 0
+}
+```
+
+## Ejemplo de Respuesta con Error de Servidor
+
+```json
+{
+  "Exito": false,
+  "Mensaje": "Error al eliminar el expediente: descripción del error",
+  "Data": 0
+}
+```
+
+## Códigos de Estado
+
+<ResponseField name="200" type="OK">
+  La solicitud se procesó correctamente. Revise el campo `Exito` para determinar si la eliminación fue exitosa.
+</ResponseField>
+
+## Validaciones
+
+- El expediente con el ID especificado debe existir en el sistema
+- Si el expediente no existe, el campo `Exito` será `false` y el campo `Mensaje` contendrá "No se pudo encontrar el expediente"
+
+## Notas Adicionales
+
+<Warning>
+  Esta operación es **permanente** y no puede deshacerse. Asegúrese de confirmar la eliminación antes de ejecutar este endpoint.
+</Warning>
+
+- Si el expediente se elimina correctamente, `Exito` será `true` y `Mensaje` será `null`
+- Si ocurre un error durante la eliminación, `Exito` será `false` y `Mensaje` contendrá detalles del error
+- Considere implementar una estrategia de "eliminación suave" (soft delete) si necesita mantener un registro histórico de expedientes eliminados

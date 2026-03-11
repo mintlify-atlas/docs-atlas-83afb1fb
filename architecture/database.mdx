@@ -1,0 +1,507 @@
+---
+title: Database Architecture
+description: SQL Server database schema and Entity Framework Core implementation
+---
+
+## Database Architecture
+
+The sistema uses **SQL Server** as the relational database, accessed through **Entity Framework Core 9.0** using a code-first approach.
+
+### Database Overview
+
+**Database Name:** `SistemaSolicitudes`
+
+**Connection String:**
+```
+Server=(local); 
+DataBase=SistemaSolicitudes; 
+Trusted_Connection=True; 
+TrustServerCertificate=True;
+```
+
+### Entity Framework Core Context
+
+The `SistemaSolicitudesContext` class serves as the main data access layer:
+
+**Location:** `SolicitudesAPI/Models/SistemaSolicitudesContext.cs`
+
+```csharp
+public partial class SistemaSolicitudesContext : DbContext
+{
+    public virtual DbSet<Calendario> Calendario { get; set; }
+    public virtual DbSet<Expediente> Expedientes { get; set; }
+    public virtual DbSet<Usuario> Usuarios { get; set; }
+    public virtual DbSet<DiaInhabilManual> DiaInhabilManual { get; set; }
+}
+```
+
+### Database Tables
+
+## Expedientes Table
+
+**Purpose:** Stores all requests/cases (expedientes) in the system.
+
+**Table Name:** `Expedientes` (default from DbSet name)
+
+### Schema Definition
+
+| Column Name | Data Type | Constraints | Description |
+|------------|-----------|-------------|-------------|
+| `ID` | int | PRIMARY KEY | Auto-generated unique identifier |
+| `Folio` | varchar(50) | | Unique case/file number |
+| `NombreSolicitante` | varchar(50) | | Name of the person making the request |
+| `ContenidoSolicitud` | nvarchar(max) | | Full content/details of the request |
+| `Estado` | varchar(50) | | Current status of the expediente |
+| `FechaInicio` | datetime | | Date when the expediente was initiated |
+| `SubsanaPrevencion_ReinicoTramite` | bit | | Flag indicating if process needs to be restarted |
+
+### Entity Configuration
+
+```csharp
+modelBuilder.Entity<Expediente>(entity =>
+{
+    entity.HasKey(e => e.Id)
+          .HasName("PK__Solicitu__3214EC27AA69A3A2");
+
+    entity.Property(e => e.Id).HasColumnName("ID");
+    
+    entity.Property(e => e.ContenidoSolicitud)
+          .HasColumnType("nvarchar(max)");
+    
+    entity.Property(e => e.Estado)
+        .HasMaxLength(50)
+        .IsUnicode(false);
+    
+    entity.Property(e => e.FechaInicio)
+          .HasColumnType("datetime");
+    
+    entity.Property(e => e.Folio)
+        .HasMaxLength(50)
+        .IsUnicode(false);
+    
+    entity.Property(e => e.NombreSolicitante)
+        .HasMaxLength(50)
+        .IsUnicode(false);
+    
+    entity.Property(e => e.SubsanaPrevencionReinicoTramite)
+          .HasColumnName("SubsanaPrevencion_ReinicoTramite");
+});
+```
+
+### C# Entity Model
+
+**Location:** `SolicitudesAPI/Models/Expediente.cs`
+
+```csharp
+public class Expediente
+{
+    public int Id { get; set; }
+    public string? Folio { get; set; }
+    public string? NombreSolicitante { get; set; }
+    public string? ContenidoSolicitud { get; set; }
+    public string? Estado { get; set; }
+    public DateTime? FechaInicio { get; set; }
+    public bool? SubsanaPrevencionReinicoTramite { get; set; }
+}
+```
+
+### Business Logic
+
+**Status Values (Estado):**
+Common values might include:
+- "Pendiente" - Pending
+- "En Proceso" - In Progress
+- "Completado" - Completed
+- "Rechazado" - Rejected
+- "Suspendido" - Suspended
+
+**Use Cases:**
+- Track all information requests
+- Monitor request status and progression
+- Calculate deadlines based on FechaInicio
+- Handle process restarts via SubsanaPrevencion flag
+
+---
+
+## Usuarios Table
+
+**Purpose:** Stores system users for authentication and authorization.
+
+**Table Name:** `Usuarios`
+
+### Schema Definition
+
+| Column Name | Data Type | Constraints | Description |
+|------------|-----------|-------------|-------------|
+| `ID` | int | PRIMARY KEY | Auto-generated user identifier |
+| `NombreUsuario` | varchar(50) | | Username for login |
+| `password` | varchar(4000) | | Hashed password |
+| `Rol` | varchar(50) | | User role (admin, user, etc.) |
+
+### Entity Configuration
+
+```csharp
+modelBuilder.Entity<Usuario>(entity =>
+{
+    entity.HasKey(e => e.Id)
+          .HasName("PK__Usuarios__3214EC27AA69A3A2");
+
+    entity.Property(e => e.Id).HasColumnName("ID");
+    
+    entity.Property(e => e.NombreUsuario)
+        .HasMaxLength(50)
+        .IsUnicode(false);
+    
+    entity.Property(e => e.password)
+        .HasMaxLength(4000)
+        .IsUnicode(false)
+        .HasColumnName("password");
+    
+    entity.Property(e => e.Rol)
+        .HasMaxLength(50)
+        .IsUnicode(false);
+});
+```
+
+### C# Entity Model
+
+**Location:** `SolicitudesAPI/Models/Usuario.cs`
+
+```csharp
+public class Usuario
+{
+    public int Id { get; set; }
+    public string? NombreUsuario { get; set; }
+    public string? password { get; set; }
+    public string? Rol { get; set; }
+}
+```
+
+### Security Considerations
+
+**Password Storage:**
+- Should use hashing algorithms (BCrypt, Argon2, PBKDF2)
+- Never store plaintext passwords
+- Consider using ASP.NET Core Identity for robust user management
+
+**Roles:**
+Common role values:
+- "Admin" - Full system access
+- "Usuario" - Standard user access
+- "Supervisor" - Management access
+
+---
+
+## Calendario Table
+
+**Purpose:** Tracks calendar entries for deadline calculation and event management.
+
+**Table Name:** `Calendario`
+
+### Schema Definition
+
+| Column Name | Data Type | Constraints | Description |
+|------------|-----------|-------------|-------------|
+| `ID` | int | PRIMARY KEY, NOT AUTO-INCREMENT | Manual ID assignment |
+| Additional fields | | | Calendar-specific data |
+
+### Entity Configuration
+
+```csharp
+modelBuilder.Entity<Calendario>(entity =>
+{
+    entity.ToTable("Calendario");
+
+    entity.Property(e => e.Id)
+        .ValueGeneratedNever()  // Manual ID assignment
+        .HasColumnName("ID");
+});
+```
+
+### C# Entity Model
+
+**Location:** `SolicitudesAPI/Models/Calendario.cs`
+
+```csharp
+public class Calendario
+{
+    public int Id { get; set; }
+    // Additional properties based on calendar requirements
+}
+```
+
+### Use Cases
+- Track working days vs non-working days
+- Calculate deadline dates
+- Manage official holidays
+- Support business day calculations
+
+---
+
+## DiaInhabilManual Table
+
+**Purpose:** Stores manually defined non-working days (holidays, special closures).
+
+**Table Name:** `DiaInhabilManual`
+
+### C# Entity Model
+
+**Location:** `SolicitudesAPI/Models/DiaInhabilManual.cs`
+
+```csharp
+public class DiaInhabilManual
+{
+    public int Id { get; set; }
+    // Properties for date and description
+}
+```
+
+### Use Cases
+- Define custom non-working days
+- Override default calendar
+- Add special closure dates
+- Support flexible deadline calculations
+
+---
+
+## Database Relationships
+
+### Current Implementation
+
+The current schema uses a **simple, denormalized structure** with no explicit foreign key relationships between tables:
+
+- **Expedientes** - Standalone table
+- **Usuarios** - Standalone table
+- **Calendario** - Standalone table
+- **DiaInhabilManual** - Standalone table
+
+### Potential Enhancements
+
+Future improvements could include:
+
+1. **User-Expediente Relationship:**
+```csharp
+public class Expediente
+{
+    public int AsignadoAUsuarioId { get; set; }
+    public Usuario AsignadoA { get; set; }
+}
+```
+
+2. **Audit Trail:**
+```csharp
+public class Expediente
+{
+    public int CreadoPorId { get; set; }
+    public Usuario CreadoPor { get; set; }
+    public DateTime FechaCreacion { get; set; }
+    public int? ModificadoPorId { get; set; }
+    public Usuario? ModificadoPor { get; set; }
+    public DateTime? FechaModificacion { get; set; }
+}
+```
+
+3. **Status History:**
+```csharp
+public class ExpedienteHistorial
+{
+    public int Id { get; set; }
+    public int ExpedienteId { get; set; }
+    public Expediente Expediente { get; set; }
+    public string EstadoAnterior { get; set; }
+    public string EstadoNuevo { get; set; }
+    public DateTime FechaCambio { get; set; }
+    public int UsuarioId { get; set; }
+    public Usuario Usuario { get; set; }
+}
+```
+
+## Data Access Patterns
+
+### Async Operations
+
+All database operations use async/await:
+
+```csharp
+// Read
+var expedientes = await _context.Expedientes.ToListAsync();
+
+// Read with filter
+var expediente = await _context.Expedientes
+    .FirstOrDefaultAsync(e => e.Id == id);
+
+// Create
+_context.Expedientes.Add(newExpediente);
+await _context.SaveChangesAsync();
+
+// Update
+_context.Entry(expediente).State = EntityState.Modified;
+await _context.SaveChangesAsync();
+
+// Delete
+_context.Expedientes.Remove(expediente);
+await _context.SaveChangesAsync();
+```
+
+### Query Optimization
+
+**Read-Only Queries:**
+```csharp
+var expedientes = await _context.Expedientes
+    .AsNoTracking()  // Better performance for read-only
+    .Where(e => e.Estado == "Pendiente")
+    .ToListAsync();
+```
+
+**Eager Loading (when relationships exist):**
+```csharp
+var expedientes = await _context.Expedientes
+    .Include(e => e.AsignadoA)  // Load related user
+    .ToListAsync();
+```
+
+## Database Migrations
+
+### Migration Workflow
+
+**Create Migration:**
+```bash
+cd SolicitudesAPI
+dotnet ef migrations add MigrationName
+```
+
+**Apply Migration:**
+```bash
+dotnet ef database update
+```
+
+**Rollback Migration:**
+```bash
+dotnet ef database update PreviousMigrationName
+```
+
+**Remove Last Migration:**
+```bash
+dotnet ef migrations remove
+```
+
+**Generate SQL Script:**
+```bash
+dotnet ef migrations script
+```
+
+### Migration Best Practices
+
+1. **Descriptive Names:** Use clear migration names (e.g., `AddExpedienteStatusColumn`)
+2. **Review Generated Code:** Always review the migration before applying
+3. **Test First:** Test migrations in development before production
+4. **Backup:** Always backup production database before migrations
+5. **Source Control:** Commit migrations to version control
+
+## Database Configuration
+
+### Connection String
+
+**Development (appsettings.json):**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(local); DataBase=SistemaSolicitudes; Trusted_Connection=True; TrustServerCertificate=True;"
+  }
+}
+```
+
+**Production:**
+Use environment variables or secure configuration providers:
+- Azure Key Vault
+- Environment variables
+- User secrets (development)
+
+### DbContext Registration
+
+**Program.cs:**
+```csharp
+builder.Services.AddDbContext<SistemaSolicitudesContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
+```
+
+## Performance Considerations
+
+### Indexing Strategy
+
+Recommended indexes:
+
+```sql
+-- Expedientes
+CREATE INDEX IX_Expedientes_Folio ON Expedientes(Folio);
+CREATE INDEX IX_Expedientes_Estado ON Expedientes(Estado);
+CREATE INDEX IX_Expedientes_FechaInicio ON Expedientes(FechaInicio);
+
+-- Usuarios
+CREATE UNIQUE INDEX IX_Usuarios_NombreUsuario ON Usuarios(NombreUsuario);
+CREATE INDEX IX_Usuarios_Rol ON Usuarios(Rol);
+```
+
+### Query Optimization
+
+- Use `AsNoTracking()` for read-only queries
+- Avoid loading unnecessary data with `Select()`
+- Use pagination for large result sets
+- Consider compiled queries for frequently used queries
+
+### Connection Pooling
+
+EF Core and ADO.NET automatically handle connection pooling. Default settings are usually sufficient.
+
+## Backup and Recovery
+
+### Backup Strategy
+
+**SQL Server Backup:**
+```sql
+BACKUP DATABASE SistemaSolicitudes
+TO DISK = 'C:\Backups\SistemaSolicitudes_Full.bak'
+WITH FORMAT, INIT, NAME = 'Full Backup of SistemaSolicitudes';
+```
+
+**Recommended Schedule:**
+- Full backup: Daily
+- Differential backup: Every 6 hours
+- Transaction log backup: Every hour
+
+## Data Validation
+
+### Entity Validation
+
+Use Data Annotations or Fluent API:
+
+```csharp
+public class Expediente
+{
+    [Required]
+    [MaxLength(50)]
+    public string Folio { get; set; }
+    
+    [Required]
+    [MaxLength(50)]
+    public string NombreSolicitante { get; set; }
+    
+    [Required]
+    public string ContenidoSolicitud { get; set; }
+}
+```
+
+### Business Rules
+
+Implement in services or repository layer:
+- Validate state transitions
+- Ensure data integrity
+- Enforce business constraints
+
+## Next Steps
+
+- [Backend Architecture](/architecture/backend) - How the API interacts with the database
+- [Development Setup](/development/setup) - Setting up the database locally
+- [Project Structure](/development/project-structure) - Understanding the codebase organization

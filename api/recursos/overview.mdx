@@ -1,0 +1,103 @@
+---
+title: "Recursos de Revisión Overview"
+description: "API endpoints for managing recursos de revisión (review resources) in the sistema"
+---
+
+## Overview
+
+The Recursos de Revisión API provides comprehensive endpoints for managing review resources throughout their lifecycle. This API handles the creation, retrieval, updating, and statistical analysis of recursos de revisión and their associated expedientes.
+
+## Base Route
+
+All endpoints are prefixed with:
+
+```
+/api/RecursoRevision
+```
+
+## Core Entities
+
+### RecursoRevisionDTO
+
+Represents a basic review resource with the following key fields:
+
+- `NumeroRecurso` (string): Unique resource number
+- `Estatus` (string): Current status (e.g., "En Trámite", "Concluido")
+- `ResolucionSentido` (string): Resolution direction ("Confirma", "Sobresee", "Modifica", "Revoca", "Dar Respuesta")
+- `ContenidoSolicitud` (string): Request content
+- `NombreRecurrente` (string): Name of the appellant
+- `SentidoContestacion` (string): Response direction
+- `FechaAcuerdo` (DateTime?): Agreement date
+- `ContenidoAcuerdo` (string): Agreement content
+
+### ExpedienteRevisionDTO
+
+Extends RecursoRevisionDTO with additional expediente information:
+
+- `IdExpediente` (int): Unique expediente identifier
+- `FechaNotificacionAdmision` (DateTime?): Admission notification date
+- `RespuestaSolicitud` (string): Request response
+- `MateriaRecurso` (string): Subject matter of the resource
+- `RazonInterposicion` (string): Reason for filing
+- `FechaNotificacion` (DateTime?): Notification date
+- `FolioSolicitud` (string): Request folio number
+- `FechaContestacionRecurso` (DateTime?): Resource response date
+- `FechaAcuerdoFinal` (DateTime?): Final agreement date
+- `ContenidoAcuerdoFinal` (string): Final agreement content
+
+## Main Features
+
+### Resource Management
+- Create new recursos de revisión
+- Create and manage full expedientes
+- Search expedientes by folio or resource number
+- Update existing expedientes
+
+### Document Management
+- Generate PDF reports for expedientes
+- Upload PDF files associated with expedientes
+- List and download PDF files
+
+### Statistics & Reporting
+- Retrieve statistics filtered by month, year, and subject matter
+- Track resources by status and resolution type
+- Generate aggregated reports with resource lists
+
+## Available Endpoints
+
+For detailed information about each endpoint, see the [Operations](/api/recursos/operations) page.
+
+### Resource Operations
+- `POST /Agregar` - Add a new recurso de revisión
+- `POST /Expediente` - Create a full expediente
+- `GET /Expediente/Buscar` - Search expedientes
+- `PUT /Expediente/Actualizar` - Update an expediente
+- `POST /Expediente/CrearVacio` - Create an empty expediente
+
+### Document Operations
+- `POST /Expediente/PDF` - Generate PDF report
+- `POST /Expediente/SubirPDF` - Upload PDF file
+- `GET /Expediente/PDFs` - List PDFs for an expediente
+- `GET /Expediente/PDF/{idArchivo}` - Download specific PDF
+- `GET /Expediente/PDFs/Todos` - List all PDFs in the system
+
+### Statistics
+- `GET /Estadisticas` - Get statistics with optional filters
+
+## Response Format
+
+Most successful operations return a JSON response with a success message:
+
+```json
+{
+  "mensaje": "Operation completed successfully"
+}
+```
+
+Data retrieval endpoints return the requested objects or arrays directly.
+
+## Error Handling
+
+- `400 Bad Request`: Invalid parameters or missing required fields
+- `404 Not Found`: Resource not found (e.g., PDF file not found)
+- `500 Internal Server Error`: Server errors, including PDF generation failures

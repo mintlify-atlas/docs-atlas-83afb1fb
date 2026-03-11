@@ -1,0 +1,156 @@
+---
+title: "Calendar Events"
+description: "API endpoints for managing calendar business days"
+---
+
+## Overview
+
+The Calendar Events API manages the system's calendar of active business days. This calendar is used throughout the sistema to calculate response deadlines for solicitudes, ensuring that weekends and holidays are properly excluded from business day calculations.
+
+## Base Route
+
+All endpoints are prefixed with:
+
+```
+/api/Calendario
+```
+
+## Calendar System
+
+The calendar system maintains a record of active business days in the `Calendario` table. When calculating deadlines for solicitudes:
+
+- **DAI (Derecho de Acceso a la Información)**: 10 business days
+- **ARCO (Acceso, Rectificación, Cancelación, Oposición)**: 20 business days
+- **With Ampliación**: Deadlines are doubled (20 or 40 business days)
+
+Business day calculations automatically exclude:
+- Weekends (Saturday and Sunday)
+- Días inhábiles (manually configured non-working days)
+
+## Endpoints
+
+### Get Active Days
+
+```http
+GET /api/Calendario/Obtener_dias
+```
+
+Retrieves all calendar entries showing which dates are marked as active business days.
+
+**Response** (200 OK):
+
+```json
+[
+  {
+    "fecha": "2026-03-01T00:00:00",
+    "activo": true
+  },
+  {
+    "fecha": "2026-03-02T00:00:00",
+    "activo": true
+  },
+  {
+    "fecha": "2026-03-06T00:00:00",
+    "activo": false
+  }
+]
+```
+
+**CalendarioDTO Structure**:
+
+- `fecha` (DateTime): The date
+- `activo` (boolean): Whether the day is active for business
+
+---
+
+### Save Active Days
+
+```http
+POST /api/Calendario/Guardar_dia
+```
+
+Saves or updates multiple calendar day entries. Only creates new entries for dates that don't already exist in the database.
+
+**Request Body** (List of CalendarioDTO):
+
+```json
+[
+  {
+    "fecha": "2026-03-15T00:00:00",
+    "activo": true
+  },
+  {
+    "fecha": "2026-03-16T00:00:00",
+    "activo": true
+  },
+  {
+    "fecha": "2026-03-17T00:00:00",
+    "activo": false
+  }
+]
+```
+
+**Response** (200 OK):
+
+```json
+{
+  "mensaje": "Dias guardados correctamente"
+}
+```
+
+**Error Response** (400 Bad Request):
+
+```json
+{
+  "exito": false,
+  "mensaje": "No se recibieron días activos."
+}
+```
+
+Returned when the request body is null or empty.
+
+---
+
+## Usage Notes
+
+### Calendar Behavior
+
+1. **Duplicate Prevention**: The system checks if a date already exists before creating a new entry, preventing duplicates.
+
+2. **Partial Updates**: The endpoint processes each day individually, so if some dates already exist, only new dates will be added.
+
+3. **No Deletion**: This endpoint only adds new calendar entries; it does not delete or update existing ones.
+
+### Integration with Deadlines
+
+The calendar is consulted during:
+
+- Initial solicitud creation to calculate `FechaLimiteRespuesta10dias` or `FechaLimiteRespuesta20dias`
+- Recalculation of deadlines when días inhábiles are added or removed (see [Calendar Deadlines](/api/calendar/deadlines))
+
+### Business Day Calculation Logic
+
+When calculating a deadline from a start date:
+
+1. Start from `FechaInicio`
+2. For each day:
+   - Skip if it's Saturday or Sunday
+   - Skip if it's in the `DiaInhabilManual` table
+   - Otherwise, count it as 1 business day
+3. Continue until required business days are reached
+4. Add 23:59:59 to the final date for end-of-day deadline
+
+### Example
+
+If a DAI solicitud starts on March 10, 2026 (Monday) with no ampliación:
+
+- Required: 10 business days
+- March 10 (Mon): Start date (not counted)
+- March 11-14 (Tue-Fri): 4 days
+- March 15-16 (Sat-Sun): Skipped
+- March 17-20 (Mon-Thu): 4 days
+- March 21 (Fri): 1 day
+- March 24 (Mon): 1 day (10th business day)
+- **Deadline: March 24, 2026 23:59:59**
+
+If March 18 were marked as a día inhábil, the deadline would shift to March 25.

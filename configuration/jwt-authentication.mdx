@@ -1,0 +1,245 @@
+---
+title: JWT Authentication
+description: Configure JWT-based authentication for the API
+---
+
+## Overview
+
+The Sistema de Seguimiento de Solicitudes API uses JWT (JSON Web Tokens) for secure authentication. This guide covers the JWT configuration and implementation.
+
+## JWT Configuration
+
+### appsettings.json
+
+JWT settings are configured in the `Jwt` section:
+
+```json
+{
+  "Jwt": {
+    "SecretKey": "B+UjX3CzV1xL5mPjYsQ0N6W7fZ9hRg2T",
+    "Issuer": "Issuer",
+    "Audience": "Audience"
+  }
+}
+```
+
+### Configuration Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|----------|
+| `SecretKey` | Secret key for signing tokens (minimum 32 characters) | `B+UjX3CzV1xL5mPjYsQ0N6W7fZ9hRg2T` |
+| `Issuer` | Token issuer identifier | `SolicitudesAPI` or your domain |
+| `Audience` | Token audience identifier | `SolicitudesClient` or your app |
+
+<Warning>
+  The `SecretKey` must be kept secure and never committed to source control. Use environment variables or Azure Key Vault in production.
+</Warning>
+
+## JWT Implementation in Program.cs
+
+### Authentication Service Registration
+
+```csharp
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)
+            )
+        };
+    });
+```
+
+### Token Validation Parameters
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `ValidateIssuer` | `true` | Validates the token issuer matches configuration |
+| `ValidateAudience` | `true` | Validates the token audience matches configuration |
+| `ValidateLifetime` | `true` | Checks if token is expired |
+| `ValidateIssuerSigningKey` | `true` | Validates token signature |
+| `RequireHttpsMetadata` | `true` | Requires HTTPS for metadata (should be `true` in production) |
+
+## Generating JWT Tokens
+
+To generate JWT tokens in your login controller, use the following pattern:
+
+```csharp
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+public string GenerateJwtToken(Usuario usuario)
+{
+    var securityKey = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]!)
+    );
+    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+    var claims = new[]
+    {
+        new Claim(ClaimTypes.Name, usuario.NombreUsuario),
+        new Claim(ClaimTypes.Role, usuario.Rol),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+    var token = new JwtSecurityToken(
+        issuer: _configuration["Jwt:Issuer"],
+        audience: _configuration["Jwt:Audience"],
+        claims: claims,
+        expires: DateTime.UtcNow.AddHours(8),
+        signingCredentials: credentials
+    );
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
+```
+
+## Token Claims
+
+The JWT token should include the following claims:
+
+- `name` - Username from `Usuario.NombreUsuario`
+- `role` - User role from `Usuario.Rol`
+- `jti` - Unique token identifier
+- `exp` - Token expiration time
+- `iss` - Token issuer
+- `aud` - Token audience
+
+## Protecting API Endpoints
+
+Use the `[Authorize]` attribute to protect endpoints:
+
+```csharp
+using Microsoft.AspNetCore.Authorization;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ExpedientesController : ControllerBase
+{
+    [Authorize]
+    [HttpGet]
+    public IActionResult GetExpedientes()
+    {
+        // Protected endpoint
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public IActionResult DeleteExpediente(int id)
+    {
+        // Admin-only endpoint
+    }
+}
+```
+
+## Client Authentication
+
+### Sending JWT Tokens
+
+Clients must include the JWT token in the Authorization header:
+
+```http
+GET /api/expedientes HTTP/1.1
+Host: localhost:5001
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Example: Blazor HttpClient
+
+```csharp
+var request = new HttpRequestMessage(HttpMethod.Get, "api/expedientes");
+request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+var response = await httpClient.SendAsync(request);
+```
+
+## Security Best Practices
+
+### Secret Key Generation
+
+Generate a secure secret key using cryptographically secure random generators:
+
+```csharp
+using System.Security.Cryptography;
+
+var key = new byte[32];
+using (var rng = RandomNumberGenerator.Create())
+{
+    rng.GetBytes(key);
+}
+var secretKey = Convert.ToBase64String(key);
+```
+
+### Environment Variables
+
+Store JWT configuration in environment variables:
+
+```bash
+export Jwt__SecretKey="your-secure-secret-key-here"
+export Jwt__Issuer="SolicitudesAPI"
+export Jwt__Audience="SolicitudesClient"
+```
+
+### Token Expiration
+
+Set appropriate token expiration times:
+- Development: 8-24 hours
+- Production: 1-4 hours
+- Consider implementing refresh tokens for longer sessions
+
+### HTTPS Requirement
+
+Always use HTTPS in production:
+
+```csharp
+options.RequireHttpsMetadata = true; // Set to true in production
+```
+
+## Troubleshooting
+
+### 401 Unauthorized
+
+- Verify the token is included in the Authorization header
+- Check token expiration
+- Ensure Issuer and Audience match configuration
+- Verify the SecretKey is correct
+
+### Token Validation Failed
+
+- Check that `ValidateIssuer`, `ValidateAudience`, and `ValidateIssuerSigningKey` match token generation
+- Ensure the SecretKey is at least 128 bits (16 bytes)
+- Verify token format is correct (Bearer scheme)
+
+### Claims Not Found
+
+Ensure claims are added during token generation and access them correctly:
+
+```csharp
+var username = User.FindFirst(ClaimTypes.Name)?.Value;
+var role = User.FindFirst(ClaimTypes.Role)?.Value;
+```
+
+## Token Refresh Strategy
+
+For long-lived sessions, implement a refresh token mechanism:
+
+1. Issue a short-lived access token (1-4 hours)
+2. Issue a long-lived refresh token (days/weeks) stored securely
+3. Use the refresh token to obtain new access tokens
+4. Implement token revocation for logout
+
+<Note>
+  The current implementation does not include refresh tokens. Consider implementing them for production use.
+</Note>

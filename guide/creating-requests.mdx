@@ -1,0 +1,187 @@
+---
+title: Creating Transparency Requests
+description: Step-by-step guide to creating and managing transparency requests (DAI and ARCO)
+---
+
+The Sistema de Seguimiento de Solicitudes allows you to create and track two types of transparency requests: **DAI** (Derecho de Acceso a la Información) and **ARCO** (Acceso, Rectificación, Cancelación y Oposición). This guide walks you through the complete process.
+
+## Understanding Request Types
+
+### DAI (Derecho de Acceso a la Información)
+
+Requests for access to public information:
+- **Response deadline**: 10 business days
+- **With extension**: 20 business days
+- Used for general information requests
+
+### ARCO (Datos Personales)
+
+Requests related to personal data rights:
+- **Response deadline**: 20 business days
+- **With extension**: 40 business days
+- Includes: Access, Rectification, Cancellation, Opposition
+- Requires specifying which ARCO right is being exercised
+
+## Creating a New Request
+
+<Steps>
+  <Step title="Access the Requests Module">
+    From the main menu, navigate to **Módulo de Solicitudes** to access the requests management interface.
+  </Step>
+
+  <Step title="Open the Request Form">
+    Click the **Agregar Solicitud** button to open the new request modal form.
+  </Step>
+
+  <Step title="Fill in Basic Information">
+    Complete the required fields:
+    
+    - **Folio**: Request reference number (e.g., "00001/2026")
+    - **Nombre**: Name of the person making the request
+    - **Tipo de Solicitud**: Select "DAI" or "ARCO"
+    - **Tipo de Derecho**: If ARCO, specify the right (Acceso, Rectificación, Cancelación, or Oposición)
+  </Step>
+
+  <Step title="Set Dates and Reception Method">
+    Configure temporal and administrative details:
+    
+    - **Año de Admisión**: Year of admission (auto-filled)
+    - **Mes de Admisión**: Select the month from dropdown
+    - **Fecha de Inicio del Trámite**: Start date of the request
+    - **Cómo fue Recibida/Registrada**: Choose "PNT" (Plataforma Nacional de Transparencia) or "Manual"
+  </Step>
+
+  <Step title="Configure Response Preferences">
+    Specify how the requester wants to receive the response:
+    
+    - **Electrónico PNT**: Through the national transparency platform
+    - **Correo**: Via email
+    - **Otro**: Other method
+    - **No aplica**: Not applicable
+  </Step>
+
+  <Step title="Save the Request">
+    Click **Guardar** to create the request. The system will automatically:
+    
+    - Calculate the response deadline (10 or 20 business days)
+    - Skip weekends and holidays (días inhábiles)
+    - Set initial status to "En proceso"
+  </Step>
+</Steps>
+
+## Understanding Request Stages
+
+Requests progress through three main stages, visually represented in the interface:
+
+<Card title="Etapa Inicial" icon="circle" color="#ff0000">
+  Initial intake and processing of the request
+</Card>
+
+<Card title="Etapa de Seguimiento" icon="circle" color="#0000ff">
+  Follow-up, prevention periods, and extensions
+</Card>
+
+<Card title="Etapa Final" icon="circle" color="#ffff00">
+  Final response and request closure
+</Card>
+
+## Managing Request Details
+
+Once created, you can access detailed request information from the **Índice de Expedientes** page.
+
+### Editable Fields
+
+When viewing request details (`Detalles de Expediente`), you can update:
+
+#### Status Management
+- **Estatus**: Change between "En proceso" and "Terminada"
+- **Fecha de Respuesta**: Record when the response was provided
+
+#### Prevention (Prevención)
+
+If additional information is needed from the requester:
+
+1. Set **Prevención** to "Si"
+2. System calculates **Fecha Límite para Prevención** (10 business days)
+3. If requester provides information: Set **Subsana Prevención** to "Si"
+4. If "Si": Request timer restarts from subsanation date
+
+#### Extension (Ampliación)
+
+For complex requests requiring more time:
+
+1. Set **Ampliación** to "Si"
+2. System automatically doubles the response deadline:
+   - DAI: 10 → 20 business days
+   - ARCO: 20 → 40 business days
+3. Response deadline updates automatically
+
+### Automatic Deadline Calculation
+
+The system intelligently calculates deadlines by:
+
+<Check>Excluding Saturdays and Sundays</Check>
+<Check>Skipping official holidays (días festivos)</Check>
+<Check>Accounting for custom non-working days</Check>
+<Check>Updating automatically when request type or extension changes</Check>
+
+## Example: Creating a DAI Request
+
+Here's a practical example:
+
+```plaintext
+Folio: 00123/2026
+Nombre: María González López
+Tipo de Solicitud: DAI
+Fecha de Inicio: 2026-03-10 (Monday)
+
+System automatically calculates:
+→ Fecha Límite de Respuesta: 2026-03-24 (10 business days later)
+
+If Ampliación = "Si":
+→ New Fecha Límite: 2026-04-07 (20 business days total)
+```
+
+## Request Status Options
+
+The system tracks requests through these status values:
+
+| Status | Meaning | When to Use |
+|--------|---------|-------------|
+| INICIO | Initial | Request just created |
+| PROCESO | In process | Actively being worked on |
+| EN PREVENCIÓN | In prevention | Awaiting additional info from requester |
+| EN AMPLIACIÓN | Extended | Extension period granted |
+| TERMINADA | Completed | Response provided |
+| DESECHADA | Dismissed | Request dismissed (no subsanation) |
+| CANCELADA | Cancelled | Request cancelled |
+
+<Tip>
+  Use filters in the **Historial de Solicitudes** page to quickly find requests by status, date, or folio number.
+</Tip>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Accurate Folio Numbers">
+    Use a consistent folio format (e.g., sequential numbers with year) to make requests easy to track and reference.
+  </Accordion>
+
+  <Accordion title="Complete Requester Information">
+    Always fill in the requester's name and preferred response method to ensure proper communication.
+  </Accordion>
+
+  <Accordion title="Timely Status Updates">
+    Update request status regularly to maintain accurate records and avoid missed deadlines.
+  </Accordion>
+
+  <Accordion title="Document Prevention Periods">
+    When setting prevention, document what information was requested and when it was received.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+- [Track request deadlines](/guide/tracking-deadlines) to avoid overdue responses
+- [Manage files and documents](/guide/managing-files) associated with requests
+- [Generate reports](/guide/reports-statistics) to analyze request metrics

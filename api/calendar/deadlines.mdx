@@ -1,0 +1,280 @@
+---
+title: "Calendar Deadlines"
+description: "API endpoints for managing días inhábiles and deadline recalculation"
+---
+
+## Overview
+
+The Calendar Deadlines API manages días inhábiles (non-working days) that affect business day calculations across the sistema. When días inhábiles are added or removed, the system automatically recalculates response deadlines for all active solicitudes.
+
+## Base Route
+
+All endpoints are prefixed with:
+
+```
+/api/Calendario
+```
+
+## Días Inhábiles
+
+Días inhábiles are specific dates marked as non-working days (holidays, special closures, etc.). These dates are excluded from business day calculations in addition to regular weekends.
+
+When días inhábiles are modified, the system triggers automatic recalculation of all solicitud deadlines to ensure accuracy.
+
+## Endpoints
+
+### Get Días Inhábiles
+
+```http
+GET /api/Calendario/Get_DiasInhabiles
+```
+
+Retrieves all manually configured días inhábiles from the `DiaInhabilManual` table.
+
+**Response** (200 OK):
+
+```json
+[
+  {
+    "fecha": "2026-01-01T00:00:00"
+  },
+  {
+    "fecha": "2026-05-01T00:00:00"
+  },
+  {
+    "fecha": "2026-09-16T00:00:00"
+  },
+  {
+    "fecha": "2026-12-25T00:00:00"
+  }
+]
+```
+
+**DiaInhabilManualDTO Structure**:
+
+- `fecha` (DateTime): The date marked as inhábil (normalized to date only, no time component)
+
+---
+
+### Add Día Inhábil
+
+```http
+POST /api/Calendario/Guardar_DiasInhabiles
+```
+
+Adds a new día inhábil to the system. After saving, automatically triggers recalculation of all solicitud deadlines.
+
+**Request Body** (DiaInhabilManualDTO):
+
+```json
+{
+  "fecha": "2026-12-24T00:00:00"
+}
+```
+
+**Response** (200 OK):
+
+```json
+{
+  "mensaje": "Día inhábil guardado correctamente."
+}
+```
+
+**Error Response** (400 Bad Request):
+
+```
+La fecha es requerida.
+```
+
+Returned when the request body is null or invalid.
+
+**Behavior**:
+
+1. Date is normalized to date-only (time component removed)
+2. Checks if the date already exists in `DiaInhabilManual`
+3. If new, adds the date to the table
+4. **Triggers automatic recalculation** of all solicitud deadlines
+5. Returns success message
+
+---
+
+### Delete Día Inhábil
+
+```http
+DELETE /api/Calendario/Eliminar_DiaInhabil/{fecha}
+```
+
+Removes a día inhábil from the system. After deletion, automatically triggers recalculation of all solicitud deadlines.
+
+**Path Parameters**:
+
+- `fecha` (DateTime): The date to remove (format: `2026-12-24`)
+
+**Example Request**:
+
+```
+DELETE /api/Calendario/Eliminar_DiaInhabil/2026-12-24
+```
+
+**Response** (204 No Content):
+
+No response body on successful deletion.
+
+**Error Response** (404 Not Found):
+
+Returned when the specified date is not found in the `DiaInhabilManual` table.
+
+**Behavior**:
+
+1. Date is normalized to date-only
+2. Searches for the date in `DiaInhabilManual`
+3. If found, removes the record
+4. **Triggers automatic recalculation** of all solicitud deadlines
+5. Returns 204 No Content
+
+---
+
+## Automatic Deadline Recalculation
+
+When días inhábiles are added or removed, the system executes the `RecalcularFechasLimiteEnSolicitudes()` method, which:
+
+### Recalculation Process
+
+1. **Fetch Current Días Inhábiles**: Retrieves all dates from `DiaInhabilManual`
+
+2. **Retrieve Expedientes**: Gets all expedientes from the `Expedientes` table where `FechaInicio` is not null
+
+3. **For Each Expediente**:
+
+   a. **Determine Business Days Required**:
+   - DAI: 10 business days
+   - ARCO: 20 business days
+   - If `Ampliacion == "SI"`: Double the days (20 or 40)
+
+   b. **Calculate New Deadline**:
+   - Start from `FechaInicio.Date`
+   - Iterate day-by-day:
+     - Skip if Saturday or Sunday (`DayOfWeek.Saturday` or `DayOfWeek.Sunday`)
+     - Skip if date exists in días inhábiles list
+     - Otherwise, count as 1 business day and decrement counter
+   - Continue until required business days reached
+
+   c. **Add End-of-Day Time**: Add 23:59:59 to the calculated date
+
+   d. **Update Expediente**:
+   - DAI: Set `FechaLimiteRespuesta10dias`, clear `FechaLimiteRespuesta20dias`
+   - ARCO: Set `FechaLimiteRespuesta20dias`, clear `FechaLimiteRespuesta10dias`
+
+4. **Save Changes**: Commits all updated expedientes to the database
+
+### Code Reference
+
+The recalculation logic is implemented in CalendarioController.cs:130-181:
+
+```csharp
+private async Task RecalcularFechasLimiteEnSolicitudes()
+{
+    var diasInhabiles = await _context.DiaInhabilManual
+        .Select(d => d.Fecha.Date)
+        .ToListAsync();
+
+    var expedientes = await _context.Expedientes
+        .Where(e => e.FechaInicio != null)
+        .ToListAsync();
+
+    foreach (var expediente in expedientes)
+    {
+        int diasHabiles = expediente.TipoSolicitud == "DAI" ? 10 : 20;
+
+        if (expediente.Ampliacion != null && expediente.Ampliacion.ToUpper() == "SI")
+        {
+            diasHabiles *= 2; 
+        }
+
+        var fechaInicio = expediente.FechaInicio!.Value.Date;
+        var fechaCalculada = fechaInicio;
+
+        while (diasHabiles > 0)
+        {
+            fechaCalculada = fechaCalculada.AddDays(1);
+
+            bool esFinDeSemana = fechaCalculada.DayOfWeek == DayOfWeek.Saturday 
+                                || fechaCalculada.DayOfWeek == DayOfWeek.Sunday;
+            bool esDiaInhabil = diasInhabiles.Contains(fechaCalculada.Date);
+
+            if (!esFinDeSemana && !esDiaInhabil)
+            {
+                diasHabiles--;
+            }
+        }
+
+        var fechalimiteConHora = fechaCalculada.AddHours(23).AddMinutes(59).AddSeconds(59);
+
+        if (expediente.TipoSolicitud == "DAI")
+        {
+            expediente.FechaLimiteRespuesta10dias = fechalimiteConHora;
+            expediente.FechaLimiteRespuesta20dias = null;
+        }
+        else if (expediente.TipoSolicitud == "ARCO")
+        {
+            expediente.FechaLimiteRespuesta20dias = fechalimiteConHora;
+            expediente.FechaLimiteRespuesta10dias = null;
+        }
+    }
+
+    await _context.SaveChangesAsync();
+}
+```
+
+### Performance Considerations
+
+- Recalculation processes **all expedientes** with a `FechaInicio`
+- For large datasets, this operation may take time
+- The operation runs synchronously, so the API response waits for completion
+- Consider running during off-peak hours for bulk día inhábil updates
+
+### Example Scenario
+
+**Initial State**:
+- Expediente created on March 10, 2026 (Monday)
+- Type: DAI (10 business days)
+- No ampliación
+- No días inhábiles
+- **Calculated deadline**: March 24, 2026 23:59:59
+
+**Adding Día Inhábil** (March 18, 2026):
+1. POST to `/api/Calendario/Guardar_DiasInhabiles` with March 18
+2. System recalculates all deadlines
+3. March 18 now excluded from business day count
+4. **New deadline**: March 25, 2026 23:59:59
+
+**Removing Día Inhábil** (March 18, 2026):
+1. DELETE to `/api/Calendario/Eliminar_DiaInhabil/2026-03-18`
+2. System recalculates all deadlines
+3. March 18 now included in business day count
+4. **Reverted deadline**: March 24, 2026 23:59:59
+
+## Integration Notes
+
+### Database Tables
+
+- **DiaInhabilManual**: Stores manually configured non-working days
+- **Calendario**: Stores active/inactive status for specific dates
+- **Expedientes**: Contains solicitudes with `FechaInicio` and deadline fields
+
+### Related Fields in Expedientes
+
+- `FechaInicio`: Start date for deadline calculation
+- `TipoSolicitud`: "DAI" or "ARCO"
+- `Ampliacion`: "SI" or other value
+- `FechaLimiteRespuesta10dias`: Deadline for DAI requests
+- `FechaLimiteRespuesta20dias`: Deadline for ARCO requests
+
+### Business Rules
+
+1. Only expedientes with `FechaInicio != null` are recalculated
+2. Weekends (Sat/Sun) are always excluded
+3. Días inhábiles are always excluded
+4. Deadlines end at 23:59:59 on the calculated date
+5. DAI and ARCO use separate deadline fields
+6. Ampliación doubles the required business days

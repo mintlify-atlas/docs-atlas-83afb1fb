@@ -1,0 +1,460 @@
+---
+title: Reports and Statistics
+description: Generate comprehensive reports and analyze transparency request statistics
+---
+
+The Sistema de Seguimiento de Solicitudes provides powerful reporting capabilities to analyze transparency request data, track compliance metrics, and generate statistical summaries. This guide covers all reporting features.
+
+## Report Types Available
+
+The system offers several types of reports:
+
+<CardGroup cols={2}>
+  <Card title="Historical Reports" icon="clock-rotate-left">
+    Complete request history with filtering by date, status, and other criteria
+  </Card>
+  <Card title="Statistical Summaries" icon="chart-pie">
+    Appeal resource statistics by month, year, and subject matter
+  </Card>
+  <Card title="Excel Exports" icon="file-excel">
+    Downloadable spreadsheets with comprehensive request data
+  </Card>
+  <Card title="Deadline Reports" icon="calendar-check">
+    Upcoming deadlines and overdue requests
+  </Card>
+</CardGroup>
+
+## Generating Historical Reports
+
+The **Historial de Solicitudes** module provides comprehensive historical reporting.
+
+### Accessing Historical Data
+
+<Steps>
+  <Step title="Navigate to History Module">
+    From the main menu, go to **Módulo de Solicitudes** → **Historial de Solicitudes**.
+  </Step>
+
+  <Step title="View All Requests">
+    The system displays all historical requests with the following statuses:
+    - INICIO
+    - PROCESO
+    - EN PREVENCIÓN
+    - EN AMPLIACIÓN
+    - TERMINADA
+    - DESECHADA
+    - CANCELADA
+  </Step>
+
+  <Step title="Apply Filters">
+    Use the filter controls to narrow down results:
+    
+    **Text Search:**
+    - Search by requester name (Nombre)
+    - Search by folio number
+    - Real-time filtering as you type
+    
+    **Status Filter:**
+    - Select specific status from dropdown
+    - View all statuses or focus on one
+    
+    **Date Filters:**
+    - **Specific Day**: Select exact date
+    - **Month**: Choose any month
+    - **Year**: Filter by year
+  </Step>
+
+  <Step title="Review Results">
+    The filtered table shows:
+    - ID and Folio
+    - Requester name
+    - Start date
+    - Current status (color-coded badge)
+    - **Ver Detalles** button for each request
+  </Step>
+</Steps>
+
+### Report Pagination
+
+Large datasets are paginated for better performance:
+
+- **Default page size**: 12 requests per page (responsive)
+- **Navigation**: Previous/Next buttons
+- **Current page indicator**: "Página X de Y"
+- **Automatic page size**: Adjusts based on screen resolution
+
+## Downloading Excel Reports
+
+Export complete request data to Excel for advanced analysis.
+
+<Steps>
+  <Step title="Set Your Filters">
+    Configure the date and status filters to specify which requests to include in the export.
+  </Step>
+
+  <Step title="Click Download Excel">
+    Click the **📤 Descargar Excel** button in the top right.
+  </Step>
+
+  <Step title="Automatic File Generation">
+    The system generates an Excel file with a descriptive name:
+    
+    ```plaintext
+    Format: Reporte_{STATUS}_{DATE}_{TIME}.xlsx
+    
+    Examples:
+    Reporte_TERMINADA_Marzo-2026_14꞉30꞉15.xlsx
+    Reporte_TODOS_LOS_ESTADOS_11-03-2026_09꞉15꞉30.xlsx
+    Reporte_EN_PROCESO_2026_16꞉45꞉00.xlsx
+    ```
+  </Step>
+
+  <Step title="Open and Analyze">
+    The Excel file includes comprehensive data (37 columns total):
+    
+    Open with Microsoft Excel, Google Sheets, or LibreOffice Calc.
+  </Step>
+</Steps>
+
+### Excel Report Structure
+
+The generated Excel file contains:
+
+#### Header Section
+
+<Card title="Report Title" icon="heading">
+  **Row 1**: "Reporte de Solicitudes - Estado: [STATUS] - Filtro: [DATE]"  
+  Styled with blue-gray background and white text
+</Card>
+
+<Card title="Generation Timestamp" icon="clock">
+  **Row 2**: "Generado el: [DD/MM/YYYY HH:mm:ss]"  
+  Italic text showing when report was created
+</Card>
+
+#### Data Columns
+
+The report includes 37 comprehensive columns:
+
+<AccordionGroup>
+  <Accordion title="Basic Information (1-7)">
+    - **ID**: Unique identifier
+    - **Folio**: Request reference number
+    - **Año Admisión**: Year of admission
+    - **Mes Admisión**: Month of admission
+    - **Tipo Solicitud**: DAI or ARCO
+    - **Tipo Derecho**: Specific ARCO right if applicable
+    - **Nombre Solicitante**: Requester's name
+  </Accordion>
+
+  <Accordion title="Dates and Deadlines (8-16)">
+    - **Fecha Inicio**: Start date
+    - **Límite 10 días**: 10-day deadline (DAI)
+    - **Ampliación**: Extension granted (Si/No)
+    - **Sesión Ampliación**: Extension session number
+    - **Fecha Sesión**: Extension session date
+    - **Límite 20 días**: 20-day deadline (ARCO)
+    - **Estado**: Current status
+    - **Fecha Respuesta**: Response date
+    - **Promedio Días**: Average days to respond
+  </Accordion>
+
+  <Accordion title="Prevention Details (17-19)">
+    - **¿Prevención?**: Prevention required (Sí/No)
+    - **Subsanación**: Subsanation status
+    - **Límite Prevención**: Prevention deadline
+  </Accordion>
+
+  <Accordion title="Reception and Response (20-24)">
+    - **Recibida**: Reception method (PNT/Manual)
+    - **Recepción Manual**: Manual reception details
+    - **Modo Respuesta**: How response will be delivered
+    - **Correo**: Requester's email
+    - **Contenido**: Request content/description
+  </Accordion>
+
+  <Accordion title="Classification (25-29)">
+    - **Área Poseedora**: Area holding the information
+    - **Materia**: Subject matter
+    - **Ciudad**: Requester's city
+    - **Temática**: Theme
+    - **Temática Específica**: Specific theme
+  </Accordion>
+
+  <Accordion title="Response Details (30-33)">
+    - **Sentido Respuesta**: Response direction
+    - **Precisión Sentido**: Response precision
+    - **Entrega**: Delivery modality
+    - **Cobro**: Cost/charge
+  </Accordion>
+
+  <Accordion title="Appeal Information (34-37)">
+    - **Recurso**: Appeal filed (Si/No)
+    - **N° Recurso**: Appeal resource number
+    - **Datos Recurso**: Appeal details
+    - **Nota**: Additional notes
+  </Accordion>
+</AccordionGroup>
+
+### Excel Report Features
+
+<Tabs>
+  <Tab title="AutoFilter">
+    The header row (Row 4) has AutoFilter enabled, allowing you to:
+    - Sort by any column
+    - Filter multiple criteria
+    - Search within columns
+  </Tab>
+  
+  <Tab title="Formatting">
+    - **Headers**: Bold, dark blue background, white text
+    - **Borders**: All cells have thin borders
+    - **Width**: Columns auto-adjust to content
+    - **Dates**: Formatted as DD/MM/YYYY
+  </Tab>
+  
+  <Tab title="Data Integrity">
+    - Boolean fields shown as "Sí"/"No"
+    - Null values displayed as empty cells
+    - Consistent date formatting
+    - Special characters properly encoded
+  </Tab>
+</Tabs>
+
+## Appeal Resource Statistics
+
+The **Recursos de Revisión** module provides statistical analysis of appeals.
+
+### Generating Statistical Reports
+
+<Steps>
+  <Step title="Access Statistics Module">
+    Navigate to **Recursos de Revisión** → **Estadísticas**.
+  </Step>
+
+  <Step title="Configure Filters">
+    Select your analysis criteria:
+    
+    **Month Filter:**
+    - Dropdown with all 12 months
+    - Leave blank for all months
+    
+    **Year Filter:**
+    - Text input for year (e.g., "2026")
+    - Leave blank for all years
+    
+    **Subject Matter Filter:**
+    - **DAI**: Access to information
+    - **DP**: Personal data protection
+    - Leave blank for both
+  </Step>
+
+  <Step title="Execute Query">
+    Click the **Buscar** button to generate statistics.
+  </Step>
+
+  <Step title="Review Results">
+    The system displays a table with:
+    
+    - **Concepto**: Statistical concept/category
+    - **Cantidad de recursos de revisión**: Number of appeals
+    - **Desglose de los Recursos de Revisión**: Detailed breakdown of resource numbers
+  </Step>
+</Steps>
+
+### Statistical Concepts
+
+The statistics report includes various analytical categories based on:
+
+- Resolution outcomes (Confirma, Revoca, Modifica, Sobresee)
+- Matter type (DAI vs DP)
+- Time period analysis
+- Subject categorization
+
+<Note>
+  Statistics are calculated based on **Fecha de Acuerdo Final** (final agreement date), not the initial filing date.
+</Note>
+
+### Clearing Filters
+
+To reset all filters and start fresh:
+
+1. Click the **Limpiar** button
+2. All filter fields reset to empty
+3. Statistics table clears
+4. Ready for new query
+
+## Status Badge Color Coding
+
+In all reports, status badges use color coding for quick visual identification:
+
+| Status | Color | CSS Class |
+|--------|-------|----------|
+| 🟦 INICIO | Info Blue | `badge-info` |
+| 🔵 PROCESO | Primary Blue | `badge-primary` |
+| 🟨 EN PREVENCIÓN | Warning Yellow | `badge-warning` |
+| ⚪ EN AMPLIACIÓN | Light Gray | `badge-light` |
+| 🟢 TERMINADA | Success Green | `badge-success` |
+| 🔴 DESECHADA | Danger Red | `badge-danger` |
+| ⚫ CANCELADA | Dark Gray | `badge-dark` |
+
+## Report Analysis Best Practices
+
+<AccordionGroup>
+  <Accordion title="Regular Monthly Reports">
+    Generate monthly Excel reports at the end of each month for:
+    - Compliance tracking
+    - Performance metrics
+    - Management reporting
+    - Audit trail documentation
+  </Accordion>
+
+  <Accordion title="Comparative Analysis">
+    Use year filters to compare:
+    - Year-over-year request volumes
+    - Average response times across periods
+    - Status distribution changes
+    - Appeal rates over time
+  </Accordion>
+
+  <Accordion title="Status Tracking">
+    Monitor specific statuses:
+    - **EN PROCESO**: Check for requests approaching deadlines
+    - **TERMINADA**: Calculate completion rates
+    - **DESECHADA**: Analyze prevention/subsanation rates
+  </Accordion>
+
+  <Accordion title="Excel Pivot Tables">
+    Use the exported data to create pivot tables analyzing:
+    - Requests by month/year
+    - Average response times by request type
+    - Prevention rates
+    - Extension frequency
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Excel Analysis
+
+Once you have exported data, you can perform advanced analysis:
+
+### Key Metrics to Calculate
+
+<Steps>
+  <Step title="Response Rate">
+    ```plaintext
+    = TERMINADA requests / Total requests
+    Shows completion percentage
+    ```
+  </Step>
+
+  <Step title="Average Response Time">
+    ```plaintext
+    = AVERAGE(Promedio Días column)
+    Overall performance metric
+    ```
+  </Step>
+
+  <Step title="Prevention Rate">
+    ```plaintext
+    = (Prevención = Sí) / Total requests
+    Indicates request clarity issues
+    ```
+  </Step>
+
+  <Step title="Appeal Rate">
+    ```plaintext
+    = (Recurso = Sí) / TERMINADA requests
+    Shows satisfaction with responses
+    ```
+  </Step>
+</Steps>
+
+### Creating Visual Reports
+
+Excel charts you can create:
+
+<CardGroup cols={2}>
+  <Card title="Column Chart" icon="chart-column">
+    Monthly request volume trends
+  </Card>
+  <Card title="Pie Chart" icon="chart-pie">
+    Status distribution breakdown
+  </Card>
+  <Card title="Line Graph" icon="chart-line">
+    Average response time trends
+  </Card>
+  <Card title="Bar Chart" icon="chart-bar">
+    Request type comparison (DAI vs ARCO)
+  </Card>
+</CardGroup>
+
+## Automated Reporting Features
+
+### Intelligent File Naming
+
+The system automatically generates descriptive filenames:
+
+```plaintext
+Pattern: Reporte_{Estado}_{Filtro}_{Hora}.xlsx
+
+Examples:
+- Status filter only: Reporte_TERMINADA_Marzo-2026_14꞉30꞉15.xlsx
+- Date filter: Reporte_TODOS_LOS_ESTADOS_15-03-2026_10꞉00꞉00.xlsx
+- Month+Year: Reporte_PROCESO_Febrero-2026_16꞉45꞉30.xlsx
+- Year only: Reporte_EN_PREVENCION_2025_09꞉15꞉00.xlsx
+```
+
+### Dynamic Page Sizing
+
+The system adapts to screen resolution:
+
+```javascript
+function getPageSizeBasedOnResolution() {
+  // Calculates optimal page size
+  // Based on viewport height
+  // Ensures good UX on all screens
+}
+```
+
+## Report Data Sources
+
+Reports pull from these primary data sources:
+
+```plaintext
+API Endpoints:
+
+1. Requests History
+   GET /api/Expediente/Lista
+   → All expediente records
+
+2. Appeal Statistics
+   GET /api/RecursoRevision/Estadisticas
+   → Filtered statistical summaries
+   → Query params: mes, anio, materia
+
+3. Deadline Events
+   GET /api/Calendario/EventosVencimiento
+   → Upcoming deadline data
+```
+
+## Performance Considerations
+
+<Warning>
+  Large exports (thousands of records) may take time. Be patient while the system generates the Excel file.
+</Warning>
+
+Optimization tips:
+
+- Use date filters to limit result sets
+- Export specific statuses rather than all
+- Schedule large reports during off-peak hours
+- Consider monthly incremental exports vs. one annual export
+
+## Next Steps
+
+Now that you understand reporting:
+
+- Review [deadline tracking](/guide/tracking-deadlines) to improve metrics
+- Learn [file management](/guide/managing-files) for document retention
+- Explore [authentication](/guide/authentication) for report access control
+- Master [creating requests](/guide/creating-requests) for better data quality

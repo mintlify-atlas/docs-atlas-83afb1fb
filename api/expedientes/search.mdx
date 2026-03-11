@@ -1,0 +1,171 @@
+---
+title: 'Buscar Expedientes'
+api: 'GET /api/Expedientes/BuscarPorTexto'
+description: 'Busca expedientes por texto en campos clave'
+---
+
+## Descripción
+
+Este endpoint permite buscar expedientes mediante un filtro de texto que se aplica a los siguientes campos:
+- Folio
+- Nombre del Solicitante
+- Estado
+- Contenido de la Solicitud
+
+La búsqueda no distingue entre mayúsculas y minúsculas y retorna todos los expedientes que contengan el texto buscado en cualquiera de estos campos.
+
+## Endpoint
+
+```
+GET /api/Expedientes/BuscarPorTexto
+```
+
+## Parámetros de Query
+
+<ParamField query="filtro" type="string">
+  Texto a buscar en los campos del expediente. Si se omite o está vacío, se retornan todos los expedientes.
+</ParamField>
+
+## Respuesta
+
+### Estructura de la respuesta exitosa
+
+<ResponseField name="Exito" type="boolean" required>
+  Indica si la operación fue exitosa
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Mensaje descriptivo en caso de error
+</ResponseField>
+
+<ResponseField name="Data" type="array">
+  Lista de expedientes que coinciden con el filtro
+  
+  <Expandable title="ExpedienteDTO (campos resumidos)">
+    
+    <ResponseField name="Id" type="integer" required>
+      Identificador único del expediente
+    </ResponseField>
+    
+    <ResponseField name="Folio" type="string">
+      Número de folio de la solicitud
+    </ResponseField>
+    
+    <ResponseField name="NombreSolicitante" type="string" required>
+      Nombre completo del solicitante
+    </ResponseField>
+    
+    <ResponseField name="FechaInicio" type="datetime" required>
+      Fecha de inicio del trámite (formato: ISO 8601)
+    </ResponseField>
+    
+    <ResponseField name="Estado" type="string">
+      Estado actual del expediente
+    </ResponseField>
+    
+    <ResponseField name="ContenidoSolicitud" type="string">
+      Descripción del contenido de la solicitud
+    </ResponseField>
+    
+  </Expandable>
+</ResponseField>
+
+## Ejemplos de Solicitud
+
+### Buscar expedientes con el texto "presupuesto"
+
+```bash
+curl -X GET "https://api.ejemplo.com/api/Expedientes/BuscarPorTexto?filtro=presupuesto" \
+  -H "Content-Type: application/json"
+```
+
+### Buscar por nombre de solicitante
+
+```bash
+curl -X GET "https://api.ejemplo.com/api/Expedientes/BuscarPorTexto?filtro=Juan%20Pérez" \
+  -H "Content-Type: application/json"
+```
+
+### Buscar por folio
+
+```bash
+curl -X GET "https://api.ejemplo.com/api/Expedientes/BuscarPorTexto?filtro=2024-001" \
+  -H "Content-Type: application/json"
+```
+
+### Obtener todos los expedientes (sin filtro)
+
+```bash
+curl -X GET "https://api.ejemplo.com/api/Expedientes/BuscarPorTexto" \
+  -H "Content-Type: application/json"
+```
+
+## Ejemplo de Respuesta Exitosa
+
+```json
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": [
+    {
+      "Id": 1,
+      "Folio": "2024-001",
+      "NombreSolicitante": "Juan Pérez García",
+      "FechaInicio": "2024-01-15T10:30:00",
+      "Estado": "Finalizado",
+      "ContenidoSolicitud": "Solicito información sobre el presupuesto asignado al área de educación"
+    },
+    {
+      "Id": 5,
+      "Folio": "2024-005",
+      "NombreSolicitante": "María González López",
+      "FechaInicio": "2024-02-10T09:15:00",
+      "Estado": "En proceso",
+      "ContenidoSolicitud": "Información relacionada con presupuesto de obras públicas"
+    }
+  ]
+}
+```
+
+## Ejemplo de Respuesta sin Resultados
+
+```json
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": []
+}
+```
+
+## Ejemplo de Respuesta con Error
+
+```json
+{
+  "Exito": false,
+  "Mensaje": "Error al realizar la búsqueda: descripción del error",
+  "Data": null
+}
+```
+
+## Códigos de Estado
+
+<ResponseField name="200" type="OK">
+  La solicitud se procesó correctamente. Revise el campo `Exito` para determinar si hubo errores en el procesamiento.
+</ResponseField>
+
+## Campos Buscables
+
+La búsqueda se realiza en los siguientes campos:
+
+- **Folio**: Número de identificación del expediente
+- **NombreSolicitante**: Nombre completo de la persona que realizó la solicitud
+- **Estado**: Estado actual del expediente (ej: "En proceso", "Finalizado", "Pendiente")
+- **ContenidoSolicitud**: Descripción completa de lo solicitado
+
+## Notas Adicionales
+
+- La búsqueda **no distingue entre mayúsculas y minúsculas**
+- La búsqueda utiliza coincidencia parcial (el filtro puede estar contenido en cualquier parte del campo)
+- Si el parámetro `filtro` está vacío o no se proporciona, se retornan todos los expedientes del sistema
+- Los resultados incluyen solo campos resumidos del expediente; use el endpoint de Lista para obtener todos los campos
+- Use codificación URL para caracteres especiales en el filtro (ej: espacios como `%20`)

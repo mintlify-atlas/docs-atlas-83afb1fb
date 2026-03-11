@@ -1,0 +1,156 @@
+---
+title: Database Setup
+description: Configure SQL Server database for Sistema de Seguimiento de Solicitudes
+---
+
+## Overview
+
+The Sistema de Seguimiento de Solicitudes uses SQL Server as its database. This guide covers the configuration and setup process.
+
+## Connection String Configuration
+
+The database connection is configured in `appsettings.json` under the `ConnectionStrings` section.
+
+### Default Configuration
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(local); DataBase=SistemaSolicitudes; Trusted_Connection=True; TrustServerCertificate=True;"
+  }
+}
+```
+
+### Connection String Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|----------|
+| `Server` | SQL Server instance name | `(local)`, `localhost`, or `server_name\instance` |
+| `DataBase` | Database name | `SistemaSolicitudes` |
+| `Trusted_Connection` | Use Windows Authentication | `True` or `False` |
+| `TrustServerCertificate` | Trust server certificate | `True` (for development) |
+
+### SQL Server Authentication
+
+If you prefer SQL Server authentication instead of Windows authentication:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(local); DataBase=SistemaSolicitudes; User Id=sa; Password=YourPassword; TrustServerCertificate=True;"
+  }
+}
+```
+
+## Database Context
+
+The application uses Entity Framework Core with the `SistemaSolicitudesContext` class defined in `SolicitudesAPI/Models/SistemaSolicitudesContext.cs`.
+
+### Configuration in Program.cs
+
+```csharp
+builder.Services.AddDbContext<SistemaSolicitudesContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+```
+
+## Database Schema
+
+The system includes the following main entities:
+
+### Expedientes (Requests)
+
+Tracks transparency request information:
+
+- `ID` (int) - Primary key
+- `Folio` (varchar(50)) - Request folio number
+- `NombreSolicitante` (varchar(50)) - Requester name
+- `ContenidoSolicitud` (nvarchar(max)) - Request content
+- `Estado` (varchar(50)) - Request status
+- `FechaInicio` (datetime) - Start date
+- `SubsanaPrevencion_ReinicoTramite` - Prevention subsanation restart flag
+
+### Usuarios (Users)
+
+Stores user authentication and authorization data:
+
+- `ID` (int) - Primary key
+- `NombreUsuario` (varchar(50)) - Username
+- `password` (varchar(4000)) - Hashed password
+- `Rol` (varchar(50)) - User role
+
+### Calendario (Calendar)
+
+Manages working days and holidays:
+
+- `ID` (int) - Primary key
+- Calendar date information
+
+### DiaInhabilManual (Manual Non-Working Days)
+
+Tracks manually defined non-working days for calculations.
+
+## Setting Up the Database
+
+### Step 1: Create the Database
+
+Connect to your SQL Server instance and create the database:
+
+```sql
+CREATE DATABASE SistemaSolicitudes;
+GO
+```
+
+### Step 2: Run Migration Scripts
+
+Execute the SQL migration scripts located in the `source` directory to create the required tables and schema.
+
+### Step 3: Verify Connection
+
+Update your `appsettings.json` with your SQL Server credentials and test the connection by running the API:
+
+```bash
+dotnet run --project SolicitudesAPI
+```
+
+## Connection String Security
+
+<Warning>
+  Never commit sensitive connection strings with passwords to source control. Use environment variables or Azure Key Vault for production.
+</Warning>
+
+### Using Environment Variables
+
+Override the connection string using environment variables:
+
+```bash
+export ConnectionStrings__DefaultConnection="Server=prod-server; DataBase=SistemaSolicitudes; User Id=prod_user; Password=SecurePassword; TrustServerCertificate=True;"
+```
+
+### Using User Secrets (Development)
+
+For development, use .NET User Secrets:
+
+```bash
+cd SolicitudesAPI
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=(local); DataBase=SistemaSolicitudes; User Id=dev_user; Password=DevPassword; TrustServerCertificate=True;"
+```
+
+## Troubleshooting
+
+### Cannot Connect to SQL Server
+
+- Verify SQL Server is running
+- Check firewall settings
+- Ensure TCP/IP protocol is enabled in SQL Server Configuration Manager
+- Verify the server name and instance are correct
+
+### Certificate Trust Issues
+
+If you encounter certificate errors, set `TrustServerCertificate=True` in your connection string (development only).
+
+### Authentication Failed
+
+- Verify credentials are correct
+- Check if SQL Server authentication is enabled (for SQL auth)
+- Ensure the user has appropriate permissions on the database

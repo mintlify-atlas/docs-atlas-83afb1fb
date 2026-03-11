@@ -1,0 +1,160 @@
+---
+title: Architecture Overview
+description: High-level overview of the Sistema de Seguimiento de Solicitudes architecture
+---
+
+## System Architecture
+
+The Sistema de Seguimiento de Solicitudes (Request Tracking System) is built using a modern three-tier architecture that separates concerns between the client, server, and shared components.
+
+### Architecture Pattern
+
+The system follows a **client-server architecture** with clear separation of concerns:
+
+- **Frontend**: Blazor WebAssembly client-side application
+- **Backend**: ASP.NET Core Web API
+- **Shared**: Common DTOs and models shared between frontend and backend
+- **Database**: SQL Server with Entity Framework Core
+
+### Three-Project Structure
+
+The solution is organized into three main projects:
+
+#### 1. Sistema de Seguimiento de Solicitudes (Frontend)
+- **Type**: Blazor WebAssembly (`.NET 9.0`)
+- **Purpose**: Client-side UI and user interactions
+- **Location**: `/Sistema de Seguimiento de Solicitudes/`
+- **Key Features**:
+  - Progressive Web App (PWA) with service worker support
+  - Component-based UI using Blazor
+  - Client-side authentication and authorization
+  - Rich UI components (MudBlazor, Radzen)
+
+#### 2. SolicitudesAPI (Backend)
+- **Type**: ASP.NET Core Web API (`.NET 9.0`)
+- **Purpose**: REST API server and business logic
+- **Location**: `/SolicitudesAPI/`
+- **Key Features**:
+  - RESTful API endpoints
+  - JWT-based authentication
+  - Entity Framework Core data access
+  - PDF generation with QuestPDF
+  - SQL Server database integration
+
+#### 3. SolicitudesShared (Shared Library)
+- **Type**: Class Library (`.NET 9.0`)
+- **Purpose**: Shared data transfer objects and models
+- **Location**: `/SolicitudesShared/`
+- **Key Features**:
+  - DTOs for data transfer
+  - Common response models
+  - Shared validation logic
+
+### Communication Flow
+
+```
+┌─────────────────────────────────────┐
+│   Blazor WebAssembly Frontend      │
+│  (Sistema de Seguimiento...)        │
+│                                     │
+│  - Components & Pages               │
+│  - Services Layer                   │
+│  - Authentication State             │
+└──────────────┬──────────────────────┘
+               │
+               │ HTTP/HTTPS
+               │ (JSON via HttpClient)
+               │
+┌──────────────▼──────────────────────┐
+│      ASP.NET Core Web API           │
+│        (SolicitudesAPI)             │
+│                                     │
+│  - Controllers                      │
+│  - JWT Authentication               │
+│  - Business Logic                   │
+└──────────────┬──────────────────────┘
+               │
+               │ Entity Framework Core
+               │
+┌──────────────▼──────────────────────┐
+│        SQL Server Database          │
+│     (SistemaSolicitudes)            │
+│                                     │
+│  - Expedientes                      │
+│  - Usuarios                         │
+│  - Calendario                       │
+│  - DiaInhabilManual                 │
+└─────────────────────────────────────┘
+```
+
+### Technology Stack
+
+#### Frontend Technologies
+- **.NET 9.0** - Latest .NET framework
+- **Blazor WebAssembly** - Client-side web framework
+- **MudBlazor** - Material Design component library
+- **Radzen Blazor** - Additional UI components
+- **SweetAlert2** - Beautiful alerts and modals
+- **ClosedXML** - Excel file generation
+
+#### Backend Technologies
+- **ASP.NET Core 9.0** - Web API framework
+- **Entity Framework Core 9.0** - ORM for database access
+- **SQL Server** - Relational database
+- **JWT Bearer Authentication** - Secure token-based auth
+- **QuestPDF** - PDF document generation
+- **Scalar** - API documentation (OpenAPI/Swagger alternative)
+
+### Key Architectural Patterns
+
+#### Service Layer Pattern
+The frontend uses service classes to encapsulate API communication:
+- `IExpedienteService` / `ExpedienteService`
+- `IUsuarioService` / `UsuarioService`
+- `ICalendarioService` / `CalendarioService`
+- `AuthService` - Authentication service
+
+#### Repository Pattern
+The backend uses Entity Framework Core's `DbContext` as a repository:
+- `SistemaSolicitudesContext` - Main database context
+- DbSets for each entity (Expedientes, Usuarios, etc.)
+
+#### DTO Pattern
+Shared DTOs ensure type safety across client and server:
+- `ExpedienteDTO` - Request data transfer
+- `UsuariosDTO` - User data transfer
+- `LoginDTO` / `LoginResponse` - Authentication data
+- `ResponseAPI` - Standardized API responses
+
+### Security
+
+#### Authentication & Authorization
+- **JWT (JSON Web Tokens)** for stateless authentication
+- Token-based authorization on API endpoints
+- Custom `AuthenticationStateProvider` in Blazor
+- Role-based access control
+
+#### CORS Configuration
+- Configured to allow Blazor frontend access
+- Permits any origin, header, and method (development)
+
+### API Documentation
+
+The API uses **Scalar** for interactive API documentation, accessible in development mode:
+- OpenAPI specification generation
+- Interactive API testing interface
+- Automatic endpoint discovery
+
+### Database Strategy
+
+- **Code-First** approach with Entity Framework Core
+- Migrations for schema management
+- SQL Server for production database
+- Fluent API configuration in `OnModelCreating`
+
+## Next Steps
+
+- [Frontend Architecture](/architecture/frontend) - Deep dive into Blazor WebAssembly structure
+- [Backend Architecture](/architecture/backend) - Detailed API and business logic
+- [Database Architecture](/architecture/database) - Database schema and Entity Framework
+- [Development Setup](/development/setup) - Get started with development

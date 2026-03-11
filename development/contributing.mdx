@@ -1,0 +1,532 @@
+---
+title: Contributing Guide
+description: Guidelines and best practices for contributing to the project
+---
+
+## Contributing to Sistema de Seguimiento de Solicitudes
+
+Thank you for your interest in contributing! This guide will help you understand our development workflow and best practices.
+
+## Getting Started
+
+### Prerequisites
+
+Before you begin, make sure you have:
+
+1. Completed the [Development Setup](/development/setup)
+2. Read the [Project Structure](/development/project-structure) documentation
+3. Familiarized yourself with the [Architecture Overview](/architecture/overview)
+
+### Setting Up Your Development Environment
+
+1. **Fork the Repository** (if applicable)
+   ```bash
+   # Clone your fork
+   git clone <your-fork-url>
+   cd Sistema-de-Seguimiento-de-Solicitudes
+   ```
+
+2. **Create a Development Branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   # or
+   git checkout -b fix/bug-description
+   ```
+
+3. **Install Dependencies**
+   ```bash
+   dotnet restore
+   ```
+
+## Development Workflow
+
+### Branch Naming Convention
+
+Use descriptive branch names with prefixes:
+
+- `feature/` - New features
+  - Example: `feature/add-email-notifications`
+- `fix/` - Bug fixes
+  - Example: `fix/login-validation-error`
+- `refactor/` - Code refactoring
+  - Example: `refactor/expediente-service`
+- `docs/` - Documentation changes
+  - Example: `docs/update-setup-guide`
+- `test/` - Adding or updating tests
+  - Example: `test/expediente-controller`
+
+### Making Changes
+
+#### 1. Code Style and Standards
+
+**C# Code Style:**
+- Follow [C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+- Use PascalCase for public members
+- Use camelCase for private fields (with `_` prefix)
+- Use meaningful variable and method names
+- Add XML documentation comments for public APIs
+
+**Example:**
+```csharp
+/// <summary>
+/// Retrieves an expediente by its ID.
+/// </summary>
+/// <param name="id">The expediente ID</param>
+/// <returns>The expediente if found, null otherwise</returns>
+public async Task<ExpedienteDTO?> GetExpedienteByIdAsync(int id)
+{
+    var expediente = await _context.Expedientes
+        .AsNoTracking()
+        .FirstOrDefaultAsync(e => e.Id == id);
+    
+    return expediente != null ? MapToDto(expediente) : null;
+}
+```
+
+**Razor Component Style:**
+- Keep component files focused and small
+- Separate code-behind when logic is complex
+- Use proper @code blocks or code-behind files
+- Follow Blazor component lifecycle best practices
+
+**Example:**
+```razor
+@page "/expedientes"
+@inject IExpedienteService ExpedienteService
+
+<h3>Expedientes</h3>
+
+@if (expedientes == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <MudDataGrid Items="@expedientes" />
+}
+
+@code {
+    private List<ExpedienteDTO>? expedientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        expedientes = await ExpedienteService.GetAllAsync();
+    }
+}
+```
+
+#### 2. Database Changes
+
+**When modifying entities or DbContext:**
+
+1. Make your changes to the entity classes or DbContext
+2. Create a migration:
+   ```bash
+   cd SolicitudesAPI
+   dotnet ef migrations add DescriptiveNameOfChange
+   ```
+3. Review the generated migration file
+4. Test the migration locally:
+   ```bash
+   dotnet ef database update
+   ```
+5. If needed, rollback and refine:
+   ```bash
+   dotnet ef database update PreviousMigration
+   dotnet ef migrations remove
+   ```
+
+**Migration Best Practices:**
+- Use descriptive migration names (e.g., `AddEmailToUsuario`)
+- Never modify existing migrations that have been deployed
+- Always test migrations both up and down
+- Include seed data if necessary
+- Document breaking changes
+
+#### 3. Adding New Features
+
+**Frontend Feature:**
+
+1. **Create DTO in Shared project** (if needed)
+   ```bash
+   # SolicitudesShared/YourNewDTO.cs
+   ```
+
+2. **Create Service Interface and Implementation**
+   ```bash
+   # Services/IYourService.cs
+   # Services/YourService.cs
+   ```
+
+3. **Register Service in Program.cs**
+   ```csharp
+   builder.Services.AddScoped<IYourService, YourService>();
+   ```
+
+4. **Create Razor Component**
+   ```bash
+   # Pages/YourFeature/ComponentName.razor
+   ```
+
+5. **Add Component Styles** (if needed)
+   ```bash
+   # Pages/YourFeature/ComponentName.razor.css
+   ```
+
+**Backend Feature:**
+
+1. **Create/Update Entity Model**
+   ```bash
+   # Models/YourEntity.cs
+   ```
+
+2. **Update DbContext**
+   ```csharp
+   public virtual DbSet<YourEntity> YourEntities { get; set; }
+   ```
+
+3. **Create Migration**
+   ```bash
+   dotnet ef migrations add AddYourEntity
+   ```
+
+4. **Create Controller**
+   ```bash
+   # Controllers/YourEntityController.cs
+   ```
+
+5. **Test Endpoints**
+   - Use Scalar UI at `/scalar/v1`
+   - Or create requests in `SolicitudesAPI.http`
+
+#### 4. Testing Your Changes
+
+**Manual Testing Checklist:**
+
+- [ ] Frontend compiles without errors
+- [ ] Backend compiles without errors
+- [ ] Database migrations apply successfully
+- [ ] New features work as expected
+- [ ] Existing features still work (regression testing)
+- [ ] Authentication/authorization works correctly
+- [ ] Error handling works properly
+- [ ] UI is responsive and accessible
+- [ ] No console errors in browser
+- [ ] API returns expected status codes
+
+**Testing Commands:**
+
+```bash
+# Build all projects
+dotnet build
+
+# Run backend tests (if available)
+cd SolicitudesAPI.Tests
+dotnet test
+
+# Check for compilation errors
+dotnet build --no-incremental
+```
+
+### Committing Changes
+
+#### Commit Message Guidelines
+
+Use clear, descriptive commit messages following this format:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `refactor`: Code refactoring
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, etc.)
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+
+**Examples:**
+
+```bash
+# Good commit messages
+git commit -m "feat(expedientes): add search by folio functionality"
+git commit -m "fix(auth): resolve JWT token expiration issue"
+git commit -m "refactor(services): improve error handling in ExpedienteService"
+git commit -m "docs(readme): update installation instructions"
+
+# Bad commit messages (avoid these)
+git commit -m "fixed stuff"
+git commit -m "updates"
+git commit -m "WIP"
+```
+
+**Detailed Example:**
+
+```
+feat(expedientes): add advanced search filters
+
+Implemented advanced search functionality allowing users to filter
+expedientes by date range, status, and solicitante name.
+
+Changes:
+- Added search form component
+- Updated ExpedienteService with filter methods
+- Added query parameters to API endpoint
+- Updated database indexes for better query performance
+
+Closes #123
+```
+
+#### Committing Best Practices
+
+1. **Make atomic commits** - Each commit should represent one logical change
+2. **Commit often** - Small, frequent commits are better than large ones
+3. **Test before committing** - Ensure code compiles and works
+4. **Don't commit secrets** - Never commit passwords, API keys, etc.
+5. **Use .gitignore** - Ensure build artifacts are ignored
+
+### Creating Pull Requests
+
+#### Before Creating a PR
+
+1. **Update your branch with main**
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout your-branch
+   git rebase main
+   # or
+   git merge main
+   ```
+
+2. **Run final checks**
+   ```bash
+   dotnet build
+   dotnet test
+   ```
+
+3. **Review your changes**
+   ```bash
+   git diff main
+   ```
+
+#### PR Template
+
+When creating a pull request, include:
+
+```markdown
+## Description
+[Describe what this PR does]
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Changes Made
+- [List specific changes]
+- [One item per change]
+
+## Testing
+- [ ] Tested locally
+- [ ] All existing tests pass
+- [ ] Added new tests (if applicable)
+
+## Screenshots (if applicable)
+[Add screenshots for UI changes]
+
+## Related Issues
+Closes #[issue number]
+
+## Checklist
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex code
+- [ ] Documentation updated
+- [ ] No new warnings introduced
+- [ ] Database migrations included (if needed)
+```
+
+#### PR Best Practices
+
+1. **Keep PRs focused** - One feature or fix per PR
+2. **Write descriptive titles** - Clear, concise summary
+3. **Provide context** - Explain why the change is needed
+4. **Include examples** - Show before/after for UI changes
+5. **Request specific reviewers** - Tag relevant team members
+6. **Respond to feedback** - Address review comments promptly
+7. **Keep PRs small** - Easier to review and less likely to have issues
+
+## Code Review Process
+
+### As an Author
+
+1. **Be open to feedback** - Reviews improve code quality
+2. **Respond promptly** - Address comments in a timely manner
+3. **Explain your decisions** - Help reviewers understand your approach
+4. **Make requested changes** - Or discuss why you disagree
+5. **Keep discussions professional** - Focus on code, not individuals
+
+### As a Reviewer
+
+1. **Be constructive** - Suggest improvements, don't just criticize
+2. **Explain reasoning** - Help authors learn and improve
+3. **Focus on important issues** - Don't be overly pedantic
+4. **Approve when ready** - Don't block on minor style issues
+5. **Test the changes** - Pull the branch and verify functionality
+
+## Common Tasks
+
+### Adding a New API Endpoint
+
+1. **Create/Update DTO in Shared**
+2. **Add Controller Action**
+   ```csharp
+   [HttpGet("{id}")]
+   public async Task<ActionResult<ExpedienteDTO>> GetExpediente(int id)
+   {
+       var expediente = await _context.Expedientes.FindAsync(id);
+       if (expediente == null) return NotFound();
+       return Ok(MapToDto(expediente));
+   }
+   ```
+3. **Test with Scalar**
+4. **Update Frontend Service**
+5. **Use in Component**
+
+### Adding a New Database Table
+
+1. **Create Entity Class**
+   ```csharp
+   public class NuevaEntidad
+   {
+       public int Id { get; set; }
+       public string Nombre { get; set; }
+       // ...
+   }
+   ```
+
+2. **Add DbSet to Context**
+   ```csharp
+   public virtual DbSet<NuevaEntidad> NuevasEntidades { get; set; }
+   ```
+
+3. **Configure Entity (if needed)**
+   ```csharp
+   protected override void OnModelCreating(ModelBuilder modelBuilder)
+   {
+       modelBuilder.Entity<NuevaEntidad>(entity =>
+       {
+           entity.HasKey(e => e.Id);
+           // ... additional configuration
+       });
+   }
+   ```
+
+4. **Create and Apply Migration**
+   ```bash
+   dotnet ef migrations add AddNuevaEntidadTable
+   dotnet ef database update
+   ```
+
+### Adding a New Page
+
+1. **Create Razor Component**
+   ```razor
+   @page "/nueva-pagina"
+   @inject IYourService YourService
+
+   <h3>Nueva Página</h3>
+
+   @code {
+       protected override async Task OnInitializedAsync()
+       {
+           // Initialization logic
+       }
+   }
+   ```
+
+2. **Add Navigation Link** (if needed)
+   ```razor
+   <MudNavLink Href="/nueva-pagina">Nueva Página</MudNavLink>
+   ```
+
+3. **Add Authorization** (if needed)
+   ```razor
+   @attribute [Authorize(Roles = "Admin")]
+   ```
+
+## Troubleshooting
+
+### Common Issues
+
+**Merge Conflicts:**
+```bash
+# Update your branch
+git fetch origin
+git rebase origin/main
+
+# Resolve conflicts in your editor
+# Then continue
+git add .
+git rebase --continue
+```
+
+**Build Errors:**
+```bash
+# Clean and rebuild
+dotnet clean
+dotnet restore
+dotnet build
+```
+
+**Migration Issues:**
+```bash
+# Remove last migration
+dotnet ef migrations remove
+
+# Recreate migration
+dotnet ef migrations add YourMigrationName
+```
+
+## Getting Help
+
+### Resources
+
+- [Architecture Documentation](/architecture/overview)
+- [Development Setup](/development/setup)
+- [Project Structure](/development/project-structure)
+
+### Asking Questions
+
+When asking for help, include:
+
+1. **What you're trying to do**
+2. **What you've tried**
+3. **Error messages** (full text)
+4. **Relevant code snippets**
+5. **Your environment** (OS, .NET version, etc.)
+
+### Communication Channels
+
+- **Issues** - Bug reports and feature requests
+- **Pull Requests** - Code reviews and discussions
+- **Team Chat** - Quick questions and coordination
+- **Documentation** - Reference and guides
+
+## Thank You!
+
+Your contributions make this project better for everyone. We appreciate your time and effort!
+
+## Next Steps
+
+- [Development Setup](/development/setup) - Get your environment ready
+- [Project Structure](/development/project-structure) - Understand the codebase
+- [Architecture Overview](/architecture/overview) - Learn the system design

@@ -1,0 +1,710 @@
+---
+title: Installation Guide
+description: Complete installation and configuration guide for Sistema de Seguimiento de Solicitudes
+---
+
+## Overview
+
+This guide will walk you through installing and configuring Sistema de Seguimiento de Solicitudes on your local machine or server. The installation process involves setting up the database, configuring the API, and running the frontend application.
+
+<Note>
+**Estimated Time**: 20-30 minutes
+
+**Difficulty**: Intermediate - Requires familiarity with .NET development and SQL Server
+</Note>
+
+## Prerequisites
+
+Before you begin, ensure your system meets the following requirements:
+
+### Required Software
+
+<Steps>
+  <Step title=".NET 9.0 SDK">
+    Download and install the .NET 9.0 SDK from [Microsoft's official website](https://dotnet.microsoft.com/download/dotnet/9.0).
+    
+    Verify installation:
+    ```bash
+    dotnet --version
+    # Should output: 9.0.x or higher
+    ```
+  </Step>
+  
+  <Step title="SQL Server">
+    Install one of the following:
+    - SQL Server 2019 or later (Express, Developer, or Enterprise)
+    - SQL Server LocalDB
+    - Azure SQL Database
+    
+    Download from: [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
+  </Step>
+  
+  <Step title="SQL Server Management Studio (SSMS)">
+    Recommended for database management and import operations.
+    
+    Download from: [SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms)
+  </Step>
+  
+  <Step title="Visual Studio 2022 (Recommended)">
+    Visual Studio 2022 or later with the following workloads:
+    - ASP.NET and web development
+    - .NET desktop development
+    
+    **Alternative**: Visual Studio Code with C# extension
+    
+    <Warning>
+    Keep Visual Studio updated to avoid framework compatibility issues.
+    </Warning>
+  </Step>
+  
+  <Step title="Node.js (Optional)">
+    Required only for accessibility auditing features.
+    
+    Version: 18.x or later
+    
+    Download from: [Node.js](https://nodejs.org/)
+  </Step>
+</Steps>
+
+### System Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| OS | Windows 10, Windows Server 2016, Linux (Ubuntu 20.04+) | Windows 11, Windows Server 2022 |
+| RAM | 4 GB | 8 GB+ |
+| Disk Space | 2 GB | 5 GB+ |
+| CPU | 2 cores | 4+ cores |
+
+## Step 1: Clone the Repository
+
+First, clone or download the source code:
+
+<CodeGroup>
+```bash Git Clone
+git clone <repository-url>
+cd "Sistema de Seguimiento de Solicitudes"
+```
+
+```bash Download ZIP
+# If you downloaded a ZIP file:
+unzip sistema-solicitudes.zip
+cd "Sistema de Seguimiento de Solicitudes"
+```
+</CodeGroup>
+
+## Step 2: Database Setup
+
+The application uses SQL Server as its database. Follow these steps to set it up:
+
+<Steps>
+  <Step title="Import the Database">
+    The project includes a `.bacpac` file for easy database import.
+    
+    **Using SQL Server Management Studio:**
+    
+    1. Open SQL Server Management Studio (SSMS)
+    2. Connect to your SQL Server instance
+    3. Right-click on **Databases** in Object Explorer
+    4. Select **Import Data-tier Application...**
+    5. Click **Next**, then **Browse**
+    6. Navigate to the project folder and select `SistemaSolicitudes.bacpac`
+    7. Click **Next** and ensure the database name is exactly: `SistemaSolicitudes`
+    8. Click **Next** and then **Finish** to complete the import
+    
+    <Note>
+    The database name must be **exactly** `SistemaSolicitudes` to match the connection string, or you'll need to update the connection string accordingly.
+    </Note>
+  </Step>
+  
+  <Step title="Verify Database Schema">
+    After import, verify the following tables exist:
+    
+    ```sql
+    -- Run in SSMS to verify tables
+    SELECT TABLE_NAME 
+    FROM INFORMATION_SCHEMA.TABLES 
+    WHERE TABLE_TYPE = 'BASE TABLE'
+    ORDER BY TABLE_NAME;
+    ```
+    
+    Expected tables:
+    - `Calendario`
+    - `DiaInhabilManual`
+    - `Expedientes`
+    - `MT_EXPEDIENTE_ARCHIVOS`
+    - `MT_RECURSO_REVISION`
+    - `Usuarios`
+  </Step>
+  
+  <Step title="Configure Database Server">
+    Note your SQL Server instance name. Common formats:
+    
+    - `(local)` - Local default instance
+    - `(localdb)\MSSQLLocalDB` - LocalDB instance
+    - `.\SQLEXPRESS` - SQL Server Express
+    - `SERVER_NAME\INSTANCE_NAME` - Named instance
+    - `server.domain.com` - Remote server
+    
+    Test connectivity:
+    ```sql
+    -- In SSMS, run:
+    SELECT @@SERVERNAME AS ServerName, 
+           @@VERSION AS VersionInfo;
+    ```
+  </Step>
+</Steps>
+
+## Step 3: Configure the API
+
+Now configure the backend API to connect to your database:
+
+<Steps>
+  <Step title="Navigate to API Project">
+    ```bash
+    cd SolicitudesAPI
+    ```
+  </Step>
+  
+  <Step title="Update Connection String">
+    Open `appsettings.json` and update the connection string:
+    
+    ```json appsettings.json
+    {
+      "ConnectionStrings": {
+        "DefaultConnection": "Server=(local); DataBase=SistemaSolicitudes; Trusted_Connection=True; TrustServerCertificate=True;"
+      }
+    }
+    ```
+    
+    **Replace `(local)` with your SQL Server instance name.**
+    
+    <CodeGroup>
+    ```json Local Default Instance
+    {
+      "ConnectionStrings": {
+        "DefaultConnection": "Server=(local); DataBase=SistemaSolicitudes; Trusted_Connection=True; TrustServerCertificate=True;"
+      }
+    }
+    ```
+    
+    ```json SQL Server Express
+    {
+      "ConnectionStrings": {
+        "DefaultConnection": "Server=.\\SQLEXPRESS; DataBase=SistemaSolicitudes; Trusted_Connection=True; TrustServerCertificate=True;"
+      }
+    }
+    ```
+    
+    ```json LocalDB
+    {
+      "ConnectionStrings": {
+        "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB; DataBase=SistemaSolicitudes; Trusted_Connection=True; TrustServerCertificate=True;"
+      }
+    }
+    ```
+    
+    ```json SQL Authentication
+    {
+      "ConnectionStrings": {
+        "DefaultConnection": "Server=myserver; DataBase=SistemaSolicitudes; User Id=myuser; Password=mypassword; TrustServerCertificate=True;"
+      }
+    }
+    ```
+    </CodeGroup>
+    
+    <Warning>
+    For production environments:
+    - Never commit credentials to source control
+    - Use environment variables or Azure Key Vault
+    - Set `TrustServerCertificate=False` and configure proper SSL certificates
+    </Warning>
+  </Step>
+  
+  <Step title="Configure JWT Settings">
+    Update the JWT configuration in `appsettings.json`:
+    
+    ```json appsettings.json
+    {
+      "Jwt": {
+        "SecretKey": "B+UjX3CzV1xL5mPjYsQ0N6W7fZ9hRg2T",
+        "Issuer": "Issuer",
+        "Audience": "Audience"
+      }
+    }
+    ```
+    
+    <Warning>
+    **CRITICAL FOR PRODUCTION:**
+    - Generate a new, cryptographically secure secret key (minimum 32 characters)
+    - Update `Issuer` to your domain name
+    - Update `Audience` to your application identifier
+    - Store the secret key in a secure location (Azure Key Vault, environment variables)
+    
+    Generate a secure key:
+    ```bash
+    # PowerShell
+    -join ((65..90) + (97..122) + (48..57) + (33..47) | Get-Random -Count 32 | ForEach-Object {[char]$_})
+    
+    # Linux/Mac
+    openssl rand -base64 32
+    ```
+    </Warning>
+  </Step>
+  
+  <Step title="Review Launch Settings">
+    Check `Properties/launchSettings.json` for API URLs:
+    
+    ```json Properties/launchSettings.json
+    {
+      "profiles": {
+        "https": {
+          "commandName": "Project",
+          "launchBrowser": false,
+          "launchUrl": "scalar/v1",
+          "applicationUrl": "https://localhost:7123;http://localhost:5273",
+          "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+          }
+        }
+      }
+    }
+    ```
+    
+    The API will run on:
+    - **HTTPS**: `https://localhost:7123`
+    - **HTTP**: `http://localhost:5273`
+    
+    <Note>
+    You can change `launchBrowser` to `true` to automatically open the Scalar API documentation when starting the API.
+    </Note>
+  </Step>
+  
+  <Step title="Restore NuGet Packages">
+    ```bash
+    dotnet restore
+    ```
+    
+    This installs all required dependencies:
+    - Entity Framework Core 9.0.4
+    - JWT Bearer Authentication
+    - QuestPDF for PDF generation
+    - Scalar for API documentation
+  </Step>
+  
+  <Step title="Test API Connection">
+    Verify the API can connect to the database:
+    
+    ```bash
+    dotnet build
+    ```
+    
+    If successful, you should see:
+    ```
+    Build succeeded.
+        0 Warning(s)
+        0 Error(s)
+    ```
+  </Step>
+</Steps>
+
+## Step 4: Configure the Frontend
+
+Configure the Blazor WebAssembly frontend application:
+
+<Steps>
+  <Step title="Navigate to Frontend Project">
+    ```bash
+    cd "../Sistema de Seguimiento de Solicitudes"
+    ```
+  </Step>
+  
+  <Step title="Update API Base URL">
+    Open `Program.cs` and verify the HttpClient configuration:
+    
+    ```csharp Program.cs
+    // Line 18
+    builder.Services.AddScoped(sp => new HttpClient 
+    { 
+        BaseAddress = new Uri("https://localhost:7123/") 
+    });
+    ```
+    
+    This URL must match your API's HTTPS URL from the previous step.
+    
+    <Note>
+    If you changed the API port in `launchSettings.json`, update this URL accordingly.
+    </Note>
+  </Step>
+  
+  <Step title="Review Launch Settings">
+    Check `Properties/launchSettings.json` for frontend URLs:
+    
+    ```json Properties/launchSettings.json
+    {
+      "profiles": {
+        "https": {
+          "commandName": "Project",
+          "launchBrowser": false,
+          "applicationUrl": "https://localhost:7125;http://localhost:5216",
+          "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+          }
+        }
+      }
+    }
+    ```
+    
+    The frontend will run on:
+    - **HTTPS**: `https://localhost:7125`
+    - **HTTP**: `http://localhost:5216`
+  </Step>
+  
+  <Step title="Restore NuGet Packages">
+    ```bash
+    dotnet restore
+    ```
+    
+    This installs all frontend dependencies:
+    - Blazor WebAssembly 9.0.4
+    - MudBlazor UI components
+    - Radzen Blazor components
+    - SweetAlert2 for notifications
+  </Step>
+  
+  <Step title="Build Frontend">
+    ```bash
+    dotnet build
+    ```
+    
+    Verify successful build before proceeding.
+  </Step>
+</Steps>
+
+## Step 5: Run the Application
+
+Now you're ready to run both components:
+
+<Steps>
+  <Step title="Start the API (Backend)">
+    In the `SolicitudesAPI` folder:
+    
+    ```bash
+    cd SolicitudesAPI
+    dotnet run --launch-profile https
+    ```
+    
+    You should see output similar to:
+    ```
+    info: Microsoft.Hosting.Lifetime[14]
+          Now listening on: https://localhost:7123
+    info: Microsoft.Hosting.Lifetime[14]
+          Now listening on: http://localhost:5273
+    info: Microsoft.Hosting.Lifetime[0]
+          Application started. Press Ctrl+C to shut down.
+    ```
+    
+    <Note>
+    Leave this terminal window open. The API must be running for the frontend to work.
+    </Note>
+  </Step>
+  
+  <Step title="Start the Frontend (New Terminal)">
+    Open a **new terminal window** and navigate to the frontend folder:
+    
+    ```bash
+    cd "Sistema de Seguimiento de Solicitudes"
+    dotnet run --launch-profile https
+    ```
+    
+    You should see:
+    ```
+    info: Microsoft.Hosting.Lifetime[14]
+          Now listening on: https://localhost:7125
+    info: Microsoft.Hosting.Lifetime[0]
+          Application started. Press Ctrl+C to shut down.
+    ```
+  </Step>
+  
+  <Step title="Access the Application">
+    Open your browser and navigate to:
+    
+    ```
+    https://localhost:7125
+    ```
+    
+    You should see the login page.
+    
+    <Note>
+    If you see a certificate warning, this is normal for local development. Click "Advanced" and "Proceed" to continue.
+    </Note>
+  </Step>
+  
+  <Step title="Access API Documentation (Optional)">
+    The API includes Scalar documentation. Access it at:
+    
+    ```
+    https://localhost:7123/scalar/v1
+    ```
+    
+    This provides interactive API documentation for all endpoints.
+  </Step>
+</Steps>
+
+## Step 6: Initial Configuration
+
+<Steps>
+  <Step title="Create Initial User">
+    Since the database is fresh, create an admin user using the API:
+    
+    <CodeGroup>
+    ```bash cURL
+    curl -X POST https://localhost:7123/api/Auth/register \
+      -H "Content-Type: application/json" \
+      -d '{
+        "nombreUsuario": "admin",
+        "password": "YourSecurePassword123!",
+        "rol": "Administrador"
+      }'
+    ```
+    
+    ```powershell PowerShell
+    $body = @{
+        nombreUsuario = "admin"
+        password = "YourSecurePassword123!"
+        rol = "Administrador"
+    } | ConvertTo-Json
+    
+    Invoke-RestMethod -Uri "https://localhost:7123/api/Auth/register" `
+      -Method Post `
+      -Body $body `
+      -ContentType "application/json"
+    ```
+    
+    ```javascript JavaScript (Browser Console)
+    fetch('https://localhost:7123/api/Auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombreUsuario: 'admin',
+        password: 'YourSecurePassword123!',
+        rol: 'Administrador'
+      })
+    })
+    .then(r => r.json())
+    .then(console.log);
+    ```
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Configure Calendar (Optional)">
+    Set up working days and holidays for accurate deadline calculations.
+    
+    ```sql
+    -- Add manual non-working days
+    INSERT INTO DiaInhabilManual (Fecha, Descripcion)
+    VALUES 
+      ('2026-01-01', 'Año Nuevo'),
+      ('2026-12-25', 'Navidad');
+    ```
+  </Step>
+  
+  <Step title="Test the Installation">
+    1. Login with your admin credentials
+    2. Navigate through the main modules
+    3. Create a test request
+    4. Verify calendar is working
+    5. Check API documentation at `/scalar/v1`
+  </Step>
+</Steps>
+
+## Running with Visual Studio
+
+If you prefer using Visual Studio:
+
+<Steps>
+  <Step title="Open Solution">
+    Double-click `Sistema de Seguimiento de Solicitudes.sln` to open in Visual Studio.
+  </Step>
+  
+  <Step title="Set Multiple Startup Projects">
+    1. Right-click on the solution in Solution Explorer
+    2. Select **Properties**
+    3. Go to **Startup Project**
+    4. Select **Multiple startup projects**
+    5. Set both `SolicitudesAPI` and `Sistema de Seguimiento de Solicitudes` to **Start**
+    6. Click **OK**
+  </Step>
+  
+  <Step title="Run the Solution">
+    Press **F5** or click the **Start** button. Visual Studio will launch both the API and frontend simultaneously.
+  </Step>
+</Steps>
+
+## Production Deployment
+
+For production environments, additional steps are required:
+
+<Warning>
+**Before deploying to production:**
+
+1. **Update JWT Secret Key**: Generate a strong, unique secret key
+2. **Configure CORS**: Restrict allowed origins to your domain
+3. **Enable HTTPS**: Configure proper SSL certificates
+4. **Secure Connection Strings**: Use Azure Key Vault or environment variables
+5. **Update Database**: Use a production SQL Server instance
+6. **Configure Logging**: Set up application insights or logging service
+7. **Review Security**: Audit authentication and authorization settings
+</Warning>
+
+### Environment-Specific Configuration
+
+<CodeGroup>
+```json appsettings.Production.json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=prod-server; DataBase=SistemaSolicitudes; User Id=prod_user; Password=***; Encrypt=True;"
+  },
+  "Jwt": {
+    "SecretKey": "USE_ENVIRONMENT_VARIABLE",
+    "Issuer": "https://yourdomain.com",
+    "Audience": "https://yourdomain.com"
+  }
+}
+```
+
+```bash Environment Variables
+# Linux/Mac
+export ConnectionStrings__DefaultConnection="Server=..."
+export Jwt__SecretKey="your-production-secret-key"
+
+# Windows
+setx ConnectionStrings__DefaultConnection "Server=..."
+setx Jwt__SecretKey "your-production-secret-key"
+```
+</CodeGroup>
+
+### Publishing the Application
+
+<CodeGroup>
+```bash Publish API
+cd SolicitudesAPI
+dotnet publish -c Release -o ./publish
+```
+
+```bash Publish Frontend
+cd "Sistema de Seguimiento de Solicitudes"
+dotnet publish -c Release -o ./publish
+```
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Database connection failed">
+    **Error**: `Cannot open database "SistemaSolicitudes" requested by the login`
+    
+    **Solutions:**
+    1. Verify database name is exactly `SistemaSolicitudes`
+    2. Check SQL Server instance name in connection string
+    3. Ensure SQL Server is running: `services.msc` → SQL Server service
+    4. Test connection in SSMS with the same credentials
+    5. Verify firewall allows SQL Server connections (port 1433)
+  </Accordion>
+  
+  <Accordion title="JWT token validation failed">
+    **Error**: `IDX10503: Signature validation failed`
+    
+    **Solutions:**
+    1. Ensure `Jwt:SecretKey` is identical in both projects
+    2. Verify `Issuer` and `Audience` match exactly
+    3. Clear browser localStorage and re-login
+    4. Check token hasn't expired (2 hour default)
+  </Accordion>
+  
+  <Accordion title="CORS errors in browser console">
+    **Error**: `Access to fetch at '...' from origin '...' has been blocked by CORS policy`
+    
+    **Solutions:**
+    1. Verify CORS is enabled in `Program.cs:62`
+    2. Check frontend URL matches CORS policy
+    3. Ensure API is running before starting frontend
+    4. Verify `UseCors("PermitirBlazor")` is called before `UseRouting()`
+  </Accordion>
+  
+  <Accordion title="QuestPDF license error">
+    **Error**: `QuestPDF license exception`
+    
+    **Solutions:**
+    1. Verify `QuestPDF.Settings.License = LicenseType.Community;` in `Program.cs:12`
+    2. For commercial use, obtain proper license from QuestPDF
+    3. Ensure line is before any PDF generation code
+  </Accordion>
+  
+  <Accordion title="Port already in use">
+    **Error**: `Unable to bind to https://localhost:7123 on the IPv4 loopback interface: 'Address already in use'`
+    
+    **Solutions:**
+    1. Check if another instance is running
+    2. Find and kill the process using the port:
+       ```bash
+       # Windows
+       netstat -ano | findstr :7123
+       taskkill /PID <process_id> /F
+       
+       # Linux/Mac
+       lsof -i :7123
+       kill -9 <process_id>
+       ```
+    3. Change the port in `launchSettings.json`
+  </Accordion>
+  
+  <Accordion title="Frontend can't connect to API">
+    **Error**: `TypeError: Failed to fetch` or `Network error`
+    
+    **Solutions:**
+    1. Verify API is running on `https://localhost:7123`
+    2. Check `Program.cs` BaseAddress matches API URL
+    3. Accept the SSL certificate warning in browser
+    4. Check browser console for detailed errors
+    5. Verify firewall allows connections to localhost
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Now that you have the application installed and running:
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+    Learn how to create your first transparency request
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/auth/login">
+    Explore all available API endpoints
+  </Card>
+  <Card title="User Management" icon="users" href="/features/user-management">
+    Set up roles and permissions
+  </Card>
+  <Card title="Security Guide" icon="shield" href="/configuration/jwt-authentication">
+    Secure your production deployment
+  </Card>
+</CardGroup>
+
+## Getting Help
+
+If you encounter issues not covered in this guide:
+
+1. Check the [Troubleshooting](#troubleshooting) section above
+2. Review the application logs in the terminal output
+3. Inspect browser console for frontend errors (F12)
+4. Verify all prerequisites are correctly installed
+5. Ensure database is properly imported and accessible
+
+<Note>
+For development, it's helpful to set `"launchBrowser": true` in both `launchSettings.json` files to automatically open the applications when starting.
+</Note>

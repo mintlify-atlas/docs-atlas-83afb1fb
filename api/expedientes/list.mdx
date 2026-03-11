@@ -1,0 +1,264 @@
+---
+title: 'Listar Expedientes'
+api: 'GET /api/Expedientes/Lista'
+description: 'Obtiene la lista completa de todos los expedientes en el sistema'
+---
+
+## Descripción
+
+Este endpoint devuelve una lista completa de todos los expedientes registrados en el sistema, incluyendo todos los campos de información de las etapas inicial, seguimiento y final.
+
+## Endpoint
+
+```
+GET /api/Expedientes/Lista
+```
+
+## Respuesta
+
+### Estructura de la respuesta exitosa
+
+<ResponseField name="Exito" type="boolean" required>
+  Indica si la operación fue exitosa
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Mensaje descriptivo en caso de error
+</ResponseField>
+
+<ResponseField name="Data" type="array">
+  Lista de expedientes
+  
+  <Expandable title="ExpedienteDTO">
+    
+    ### Etapa Inicial
+    
+    <ResponseField name="Id" type="integer" required>
+      Identificador único del expediente
+    </ResponseField>
+    
+    <ResponseField name="Folio" type="string">
+      Número de folio de la solicitud
+    </ResponseField>
+    
+    <ResponseField name="AnoAdmision" type="integer">
+      Año de admisión del expediente
+    </ResponseField>
+    
+    <ResponseField name="MesAdmision" type="string">
+      Mes de admisión del expediente
+    </ResponseField>
+    
+    <ResponseField name="TipoSolicitud" type="string">
+      Tipo de solicitud (ej: "Información Pública", "Datos Personales")
+    </ResponseField>
+    
+    <ResponseField name="TipoDerecho" type="string">
+      Tipo de derecho ejercido
+    </ResponseField>
+    
+    <ResponseField name="NombreSolicitante" type="string" required>
+      Nombre completo del solicitante
+    </ResponseField>
+    
+    <ResponseField name="FechaInicio" type="datetime" required>
+      Fecha de inicio del trámite (formato: ISO 8601)
+    </ResponseField>
+    
+    <ResponseField name="FechaLimiteRespuesta10dias" type="datetime">
+      Fecha límite de respuesta a 10 días hábiles
+    </ResponseField>
+    
+    <ResponseField name="Ampliacion" type="string">
+      Indica si hubo ampliación del plazo
+    </ResponseField>
+    
+    <ResponseField name="NumeroSesionComiteAmpliacion" type="integer">
+      Número de sesión del Comité que autorizó la ampliación
+    </ResponseField>
+    
+    <ResponseField name="FechaSesionComiteAmpliacion" type="datetime">
+      Fecha de la sesión del Comité de ampliación
+    </ResponseField>
+    
+    <ResponseField name="FechaLimiteRespuesta20dias" type="datetime">
+      Fecha límite de respuesta a 20 días hábiles (con ampliación)
+    </ResponseField>
+    
+    <ResponseField name="Estado" type="string">
+      Estado actual del expediente (ej: "En proceso", "Finalizado", "Pendiente")
+    </ResponseField>
+    
+    <ResponseField name="FechaRespuesta" type="datetime">
+      Fecha en que se dio respuesta a la solicitud
+    </ResponseField>
+    
+    <ResponseField name="PromedioDiasRespuesta" type="integer">
+      Promedio de días que tomó dar respuesta
+    </ResponseField>
+    
+    <ResponseField name="Prevencion" type="boolean">
+      Indica si hubo prevención en la solicitud
+    </ResponseField>
+    
+    <ResponseField name="SubsanaPrevencionReinicoTramite" type="string">
+      Información sobre la subsanación de la prevención y reinicio del trámite
+    </ResponseField>
+    
+    <ResponseField name="FechaLimitePrevencion10dias" type="datetime">
+      Fecha límite para subsanar la prevención (10 días)
+    </ResponseField>
+    
+    <ResponseField name="RecibidaRegistrada" type="string">
+      Cómo fue recibida o registrada la solicitud en la PNT
+    </ResponseField>
+    
+    <ResponseField name="MedioRecepcionSolicitudManual" type="string">
+      Medio de recepción en caso de solicitud manual
+    </ResponseField>
+    
+    <ResponseField name="ComoDeseaRecibirRespuestaPersonaSolicitante" type="string">
+      Preferencia del solicitante para recibir la respuesta
+    </ResponseField>
+    
+    <ResponseField name="CorreoElectronicoSolicitante" type="string">
+      Correo electrónico del solicitante
+    </ResponseField>
+    
+    <ResponseField name="ContenidoSolicitud" type="string">
+      Descripción del contenido de la solicitud
+    </ResponseField>
+    
+    ### Etapa de Seguimiento
+    
+    <ResponseField name="AreaPoseedoraInformacion" type="string">
+      Área responsable que posee la información solicitada
+    </ResponseField>
+    
+    ### Etapa Final
+    
+    <ResponseField name="Materia" type="string">
+      Materia de la solicitud
+    </ResponseField>
+    
+    <ResponseField name="CiudadSolicitante" type="string">
+      Ciudad desde donde el solicitante realizó la solicitud
+    </ResponseField>
+    
+    <ResponseField name="Tematica" type="string">
+      Temática general de la solicitud
+    </ResponseField>
+    
+    <ResponseField name="TematicaEspecifica" type="string">
+      Temática específica de la solicitud
+    </ResponseField>
+    
+    <ResponseField name="SentidoRespuesta" type="string">
+      Sentido de la respuesta otorgada (ej: "Positiva", "Negativa", "Parcial")
+    </ResponseField>
+    
+    <ResponseField name="PrecisionSentidoRespuesta" type="string">
+      Precisión o detalle adicional del sentido de la respuesta
+    </ResponseField>
+    
+    <ResponseField name="ModalidadEntrega" type="string">
+      Modalidad en que se entregó la respuesta
+    </ResponseField>
+    
+    <ResponseField name="Cobro" type="string">
+      Información sobre cobro asociado a la solicitud
+    </ResponseField>
+    
+    <ResponseField name="RecursoRevision" type="string">
+      Indica si se interpuso un recurso de revisión
+    </ResponseField>
+    
+    <ResponseField name="NumeroRecursoRevision" type="integer">
+      Número del recurso de revisión
+    </ResponseField>
+    
+    <ResponseField name="DatosRecursoRevision" type="string">
+      Datos adicionales del recurso de revisión
+    </ResponseField>
+    
+    <ResponseField name="Nota" type="string">
+      Notas adicionales sobre el expediente
+    </ResponseField>
+    
+  </Expandable>
+</ResponseField>
+
+## Ejemplo de Solicitud
+
+```bash
+curl -X GET "https://api.ejemplo.com/api/Expedientes/Lista" \
+  -H "Content-Type: application/json"
+```
+
+## Ejemplo de Respuesta
+
+```json
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": [
+    {
+      "Id": 1,
+      "Folio": "2024-001",
+      "AnoAdmision": 2024,
+      "MesAdmision": "Enero",
+      "TipoSolicitud": "Información Pública",
+      "TipoDerecho": "Acceso a la Información",
+      "NombreSolicitante": "Juan Pérez García",
+      "FechaInicio": "2024-01-15T10:30:00",
+      "FechaLimiteRespuesta10dias": "2024-01-29T23:59:59",
+      "Ampliacion": "No",
+      "NumeroSesionComiteAmpliacion": 0,
+      "FechaSesionComiteAmpliacion": null,
+      "FechaLimiteRespuesta20dias": null,
+      "Estado": "Finalizado",
+      "FechaRespuesta": "2024-01-25T14:00:00",
+      "PromedioDiasRespuesta": 8,
+      "Prevencion": false,
+      "SubsanaPrevencionReinicoTramite": null,
+      "FechaLimitePrevencion10dias": null,
+      "RecibidaRegistrada": "Plataforma Nacional de Transparencia",
+      "MedioRecepcionSolicitudManual": null,
+      "ComoDeseaRecibirRespuestaPersonaSolicitante": "Correo electrónico",
+      "CorreoElectronicoSolicitante": "juan.perez@ejemplo.com",
+      "ContenidoSolicitud": "Solicito información sobre el presupuesto asignado al área de educación",
+      "AreaPoseedoraInformacion": "Dirección de Finanzas",
+      "Materia": "Presupuesto",
+      "CiudadSolicitante": "Ciudad de México",
+      "Tematica": "Transparencia Presupuestal",
+      "TematicaEspecifica": "Presupuesto por área",
+      "SentidoRespuesta": "Positiva",
+      "PrecisionSentidoRespuesta": "Se entregó información completa",
+      "ModalidadEntrega": "Electrónica",
+      "Cobro": "Gratuito",
+      "RecursoRevision": "No",
+      "NumeroRecursoRevision": 0,
+      "DatosRecursoRevision": null,
+      "Nota": "Expediente procesado sin incidencias"
+    }
+  ]
+}
+```
+
+## Códigos de Estado
+
+<ResponseField name="200" type="OK">
+  La solicitud se procesó correctamente. Revise el campo `Exito` para determinar si hubo errores en el procesamiento.
+</ResponseField>
+
+## Manejo de Errores
+
+En caso de error, la respuesta incluirá:
+
+```json
+{
+  "Exito": false,
+  "Mensaje": "Descripción del error ocurrido",
+  "Data": null
+}
+```

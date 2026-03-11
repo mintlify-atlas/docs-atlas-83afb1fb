@@ -1,0 +1,304 @@
+---
+title: 'Actualizar Expediente'
+api: 'PUT /api/Expedientes/Actualizar/{id}'
+description: 'Actualiza la información completa de un expediente existente'
+---
+
+## Descripción
+
+Este endpoint permite actualizar toda la información de un expediente existente, incluyendo los campos de las tres etapas: inicial, seguimiento y final.
+
+## Endpoint
+
+```
+PUT /api/Expedientes/Actualizar/{id}
+```
+
+## Parámetros de Ruta
+
+<ParamField path="id" type="integer" required>
+  ID del expediente a actualizar
+</ParamField>
+
+## Cuerpo de la Solicitud
+
+### Etapa Inicial
+
+<ParamField body="Id" type="integer" required>
+  Identificador único del expediente (debe coincidir con el ID de la ruta)
+</ParamField>
+
+<ParamField body="Folio" type="string">
+  Número de folio de la solicitud
+</ParamField>
+
+<ParamField body="AnoAdmision" type="integer">
+  Año de admisión del expediente
+</ParamField>
+
+<ParamField body="MesAdmision" type="string">
+  Mes de admisión del expediente
+</ParamField>
+
+<ParamField body="TipoSolicitud" type="string">
+  Tipo de solicitud (ej: "Información Pública", "Datos Personales")
+</ParamField>
+
+<ParamField body="TipoDerecho" type="string">
+  Tipo de derecho ejercido
+</ParamField>
+
+<ParamField body="NombreSolicitante" type="string" required>
+  Nombre completo del solicitante
+</ParamField>
+
+<ParamField body="FechaInicio" type="datetime" required>
+  Fecha de inicio del trámite (formato: ISO 8601)
+</ParamField>
+
+<ParamField body="FechaLimiteRespuesta10dias" type="datetime">
+  Fecha límite de respuesta a 10 días hábiles
+</ParamField>
+
+<ParamField body="Ampliacion" type="string">
+  Indica si hubo ampliación del plazo (ej: "Sí", "No")
+</ParamField>
+
+<ParamField body="NumeroSesionComiteAmpliacion" type="integer">
+  Número de sesión del Comité que autorizó la ampliación
+</ParamField>
+
+<ParamField body="FechaSesionComiteAmpliacion" type="datetime">
+  Fecha de la sesión del Comité de ampliación
+</ParamField>
+
+<ParamField body="FechaLimiteRespuesta20dias" type="datetime">
+  Fecha límite de respuesta a 20 días hábiles (con ampliación)
+</ParamField>
+
+<ParamField body="Estado" type="string">
+  Estado actual del expediente (ej: "En proceso", "Finalizado", "Pendiente")
+</ParamField>
+
+<ParamField body="FechaRespuesta" type="datetime">
+  Fecha en que se dio respuesta a la solicitud
+</ParamField>
+
+<ParamField body="PromedioDiasRespuesta" type="integer">
+  Promedio de días que tomó dar respuesta
+</ParamField>
+
+<ParamField body="Prevencion" type="boolean">
+  Indica si hubo prevención en la solicitud
+</ParamField>
+
+<ParamField body="SubsanaPrevencionReinicoTramite" type="string">
+  Información sobre la subsanación de la prevención y reinicio del trámite
+</ParamField>
+
+<ParamField body="FechaLimitePrevencion10dias" type="datetime">
+  Fecha límite para subsanar la prevención (10 días)
+</ParamField>
+
+<ParamField body="RecibidaRegistrada" type="string">
+  Cómo fue recibida o registrada la solicitud en la PNT
+</ParamField>
+
+<ParamField body="MedioRecepcionSolicitudManual" type="string">
+  Medio de recepción en caso de solicitud manual
+</ParamField>
+
+<ParamField body="ComoDeseaRecibirRespuestaPersonaSolicitante" type="string">
+  Preferencia del solicitante para recibir la respuesta
+</ParamField>
+
+<ParamField body="CorreoElectronicoSolicitante" type="string">
+  Correo electrónico del solicitante
+</ParamField>
+
+<ParamField body="ContenidoSolicitud" type="string">
+  Descripción del contenido de la solicitud
+</ParamField>
+
+### Etapa de Seguimiento
+
+<ParamField body="AreaPoseedoraInformacion" type="string">
+  Área responsable que posee la información solicitada
+</ParamField>
+
+### Etapa Final
+
+<ParamField body="Materia" type="string">
+  Materia de la solicitud
+</ParamField>
+
+<ParamField body="CiudadSolicitante" type="string">
+  Ciudad desde donde el solicitante realizó la solicitud
+</ParamField>
+
+<ParamField body="Tematica" type="string">
+  Temática general de la solicitud
+</ParamField>
+
+<ParamField body="TematicaEspecifica" type="string">
+  Temática específica de la solicitud
+</ParamField>
+
+<ParamField body="SentidoRespuesta" type="string">
+  Sentido de la respuesta otorgada (ej: "Positiva", "Negativa", "Parcial")
+</ParamField>
+
+<ParamField body="PrecisionSentidoRespuesta" type="string">
+  Precisión o detalle adicional del sentido de la respuesta
+</ParamField>
+
+<ParamField body="ModalidadEntrega" type="string">
+  Modalidad en que se entregó la respuesta
+</ParamField>
+
+<ParamField body="Cobro" type="string">
+  Información sobre cobro asociado a la solicitud
+</ParamField>
+
+<ParamField body="RecursoRevision" type="string">
+  Indica si se interpuso un recurso de revisión (ej: "Sí", "No")
+</ParamField>
+
+<ParamField body="NumeroRecursoRevision" type="integer">
+  Número del recurso de revisión
+</ParamField>
+
+<ParamField body="DatosRecursoRevision" type="string">
+  Datos adicionales del recurso de revisión
+</ParamField>
+
+<ParamField body="Nota" type="string">
+  Notas adicionales sobre el expediente
+</ParamField>
+
+## Respuesta
+
+### Estructura de la respuesta exitosa
+
+<ResponseField name="Exito" type="boolean" required>
+  Indica si la operación fue exitosa
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Mensaje descriptivo en caso de error
+</ResponseField>
+
+<ResponseField name="Data" type="integer">
+  ID del expediente actualizado
+</ResponseField>
+
+## Ejemplo de Solicitud
+
+```bash
+curl -X PUT "https://api.ejemplo.com/api/Expedientes/Actualizar/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Id": 1,
+    "Folio": "2024-001",
+    "AnoAdmision": 2024,
+    "MesAdmision": "Enero",
+    "TipoSolicitud": "Información Pública",
+    "TipoDerecho": "Acceso a la Información",
+    "NombreSolicitante": "Juan Pérez García",
+    "FechaInicio": "2024-01-15T10:30:00",
+    "FechaLimiteRespuesta10dias": "2024-01-29T23:59:59",
+    "Ampliacion": "No",
+    "NumeroSesionComiteAmpliacion": 0,
+    "FechaSesionComiteAmpliacion": null,
+    "FechaLimiteRespuesta20dias": null,
+    "Estado": "Finalizado",
+    "FechaRespuesta": "2024-01-25T14:00:00",
+    "PromedioDiasRespuesta": 8,
+    "Prevencion": false,
+    "SubsanaPrevencionReinicoTramite": null,
+    "FechaLimitePrevencion10dias": null,
+    "RecibidaRegistrada": "Plataforma Nacional de Transparencia",
+    "MedioRecepcionSolicitudManual": null,
+    "ComoDeseaRecibirRespuestaPersonaSolicitante": "Correo electrónico",
+    "CorreoElectronicoSolicitante": "juan.perez@ejemplo.com",
+    "ContenidoSolicitud": "Solicito información sobre el presupuesto asignado al área de educación",
+    "AreaPoseedoraInformacion": "Dirección de Finanzas",
+    "Materia": "Presupuesto",
+    "CiudadSolicitante": "Ciudad de México",
+    "Tematica": "Transparencia Presupuestal",
+    "TematicaEspecifica": "Presupuesto por área",
+    "SentidoRespuesta": "Positiva",
+    "PrecisionSentidoRespuesta": "Se entregó información completa",
+    "ModalidadEntrega": "Electrónica",
+    "Cobro": "Gratuito",
+    "RecursoRevision": "No",
+    "NumeroRecursoRevision": 0,
+    "DatosRecursoRevision": null,
+    "Nota": "Expediente procesado sin incidencias"
+  }'
+```
+
+## Ejemplo de Respuesta Exitosa
+
+```json
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": 1
+}
+```
+
+## Ejemplo de Respuesta con Error - ID No Coincide
+
+```json
+{
+  "Error": "ID mismatch"
+}
+```
+
+## Ejemplo de Respuesta con Error - Expediente No Encontrado
+
+```json
+{
+  "Error": "Expediente no encontrado"
+}
+```
+
+## Ejemplo de Respuesta con Error de Servidor
+
+```json
+{
+  "Error": "Error interno del servidor: descripción del error"
+}
+```
+
+## Códigos de Estado
+
+<ResponseField name="200" type="OK">
+  La actualización se realizó correctamente
+</ResponseField>
+
+<ResponseField name="400" type="Bad Request">
+  El ID del parámetro de ruta no coincide con el ID del cuerpo de la solicitud
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  El expediente con el ID especificado no existe
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Error interno del servidor durante la actualización
+</ResponseField>
+
+## Validaciones
+
+- El ID en la ruta y en el cuerpo de la solicitud deben coincidir
+- El expediente con el ID especificado debe existir en el sistema
+- El campo `NombreSolicitante` es requerido
+- Las fechas deben estar en formato ISO 8601
+
+## Notas Adicionales
+
+- Todos los campos del expediente se actualizan con los valores proporcionados
+- Los campos no proporcionados o con valor `null` se actualizarán como `null` en la base de datos
+- Para actualizar solo algunos campos, asegúrese de enviar todos los campos existentes junto con los modificados

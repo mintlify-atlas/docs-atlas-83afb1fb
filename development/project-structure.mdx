@@ -1,0 +1,433 @@
+---
+title: Project Structure
+description: Comprehensive guide to the codebase organization and file structure
+---
+
+## Solution Structure
+
+The Sistema de Seguimiento de Solicitudes solution consists of three main projects:
+
+```
+Sistema-de-Seguimiento-de-Solicitudes/
+├── Sistema de Seguimiento de Solicitudes/   # Blazor WebAssembly Frontend
+├── SolicitudesAPI/                          # ASP.NET Core Web API Backend
+├── SolicitudesShared/                       # Shared DTOs and Models
+└── Sistema de Seguimiento de Solicitudes.sln # Solution file
+```
+
+## Frontend Project Structure
+
+### Sistema de Seguimiento de Solicitudes/
+
+```
+Sistema de Seguimiento de Solicitudes/
+├── Layout/
+│   └── [Layout components for page structure]
+│
+├── Models/
+│   └── [Frontend-specific view models and data structures]
+│
+├── Pages/
+│   ├── Modulo Solicitudes/
+│   │   ├── CalendarioRadzen.razor              # Calendar component
+│   │   ├── CalendarioRadzen.razor.css          # Calendar styles
+│   │   ├── CreacionUsuarios.razor              # User creation page
+│   │   ├── Detalles de Expediente.razor        # Expediente details view
+│   │   ├── Detalles de Expediente.razor.css    # Details view styles
+│   │   ├── Eliminar Expediente.razor           # Delete expediente page
+│   │   ├── Eliminar Expediente.razor.css       # Delete page styles
+│   │   ├── Historial de Solicitudes.razor      # Request history view
+│   │   ├── Historial de Solicitudes.razor.css  # History styles
+│   │   ├── Indice de Expedientes.razor         # Expedientes list/index
+│   │   ├── Indice de Expedientes.razor.css     # Index styles
+│   │   ├── Inicio de Solicitudes.razor         # New request creation
+│   │   ├── Login.razor                         # Login page
+│   │   ├── Login.razor.css                     # Login styles
+│   │   ├── Solicitudes.razor                   # Main requests page
+│   │   └── VerEventosVencimiento.razor         # Deadline events view
+│   │
+│   ├── Modulos/
+│   │   ├── Modulo Menu.razor                   # Navigation menu
+│   │   ├── Modulo Menu.razor.css               # Menu styles
+│   │   ├── Modulo de Solicitudes.razor         # Requests module main
+│   │   ├── Modulo de Solicitudes.razor.css     # Module styles
+│   │   └── ModuloRecursosRevision.razor        # Review resources module
+│   │
+│   └── RecursosRevision/
+│       ├── AgregarRecursoRevision.razor            # Add review resource
+│       ├── RecursoRevisionBusqueda.razor           # Search review resources
+│       ├── RecursoRevisionExpedienteDigital.razor  # Digital case file
+│       ├── RecursoRevisionRegistroMenu.razor       # Review resource menu
+│       └── RecursosRevisionEstadisticas.razor      # Statistics view
+│
+├── Properties/
+│   └── launchSettings.json                     # Launch configuration
+│
+├── Reportes Accesibilidad/
+│   └── [Accessibility reports and related files]
+│
+├── Services/
+│   ├── LoginServices/
+│   │   ├── AuthService.cs                      # Authentication service
+│   │   └── CustomAuthenticationStateProvider.cs # Auth state provider
+│   │
+│   ├── CalendarioService.cs                    # Calendar service implementation
+│   ├── ExpedienteService.cs                    # Expediente service implementation
+│   ├── ICalendarioService.cs                   # Calendar service interface
+│   ├── IExpedienteService.cs                   # Expediente service interface
+│   ├── IUsuarioService.cs                      # User service interface
+│   ├── UsuarioService.cs                       # User service implementation
+│   ├── RedirectHome.razor                      # Home redirect component
+│   └── RedirectToLogin.razor                   # Login redirect component
+│
+├── wwwroot/
+│   ├── css/                                    # Global stylesheets
+│   ├── images/                                 # Static images
+│   ├── js/                                     # JavaScript files
+│   ├── index.html                              # Main HTML entry point
+│   ├── manifest.json                           # PWA manifest
+│   ├── service-worker.js                       # Service worker (dev)
+│   └── service-worker.published.js             # Service worker (prod)
+│
+├── App.razor                                   # Root Blazor component
+├── Program.cs                                  # Application entry point
+├── _Imports.razor                              # Global using statements
+├── auditoria.js                                # Audit functionality
+├── package.json                                # npm package configuration
+├── package-lock.json                           # npm lock file
+└── Sistema de Seguimiento de Solicitudes.csproj # Project file
+```
+
+### Key Frontend Files
+
+#### Program.cs
+**Purpose:** Application entry point and service configuration
+**Contains:**
+- WebAssembly host builder setup
+- Service registrations (HttpClient, services, auth)
+- Component libraries configuration (MudBlazor, Radzen, SweetAlert2)
+
+#### App.razor
+**Purpose:** Root component that defines routing and layout
+**Contains:**
+- Router configuration
+- Authentication wrapper
+- Default layout assignments
+
+#### _Imports.razor
+**Purpose:** Global using directives for all Razor components
+**Contains:**
+- Common namespace imports
+- Component library imports
+
+## Backend Project Structure
+
+### SolicitudesAPI/
+
+```
+SolicitudesAPI/
+├── Controllers/
+│   ├── AuthController.cs                   # Authentication endpoints
+│   ├── CalendarioController.cs             # Calendar endpoints
+│   ├── CambiarContrasena.cs                # Password change endpoint
+│   ├── ExpedienteDTOesController.cs        # Expediente CRUD endpoints
+│   └── RecursoRevisionController.cs        # Review resource endpoints
+│
+├── Models/
+│   ├── SistemaSolicitudesContext.cs        # Entity Framework DbContext
+│   ├── Calendario.cs                       # Calendario entity
+│   ├── DiaInhabilManual.cs                 # Non-working day entity
+│   ├── Expediente.cs                       # Expediente entity
+│   ├── ExpedienteDto.cs                    # Expediente DTO
+│   └── Usuario.cs                          # User entity
+│
+├── PDF/
+│   └── [PDF generation services and templates]
+│
+├── Properties/
+│   └── launchSettings.json                 # Launch configuration
+│
+├── Migrations/
+│   └── [Entity Framework migration files]
+│
+├── Program.cs                              # API entry point and configuration
+├── appsettings.json                        # Application configuration
+├── appsettings.Development.json            # Development configuration
+├── SolicitudesAPI.csproj                   # Project file
+└── SolicitudesAPI.http                     # HTTP request examples
+```
+
+### Key Backend Files
+
+#### Program.cs
+**Purpose:** API configuration and middleware pipeline
+**Contains:**
+- Service registrations (DbContext, JWT, CORS)
+- Authentication/authorization setup
+- Middleware pipeline configuration
+- QuestPDF license activation
+
+#### SistemaSolicitudesContext.cs
+**Purpose:** Entity Framework Core database context
+**Contains:**
+- DbSet properties for each entity
+- Entity configurations (Fluent API)
+- Database connection handling
+
+#### Controllers/
+**Purpose:** API endpoint definitions
+**Pattern:** RESTful API controllers
+**Responsibilities:**
+- Request handling
+- Input validation
+- Business logic orchestration
+- Response formatting
+
+## Shared Project Structure
+
+### SolicitudesShared/
+
+```
+SolicitudesShared/
+├── RecursosRevision/
+│   └── [Review resource related DTOs]
+│
+├── CalendarioDTO.cs                        # Calendar data transfer object
+├── DiaInhabilManualDTO.cs                  # Non-working day DTO
+├── ExpedienteDTO.cs                        # Expediente data transfer object
+├── LoginDTO.cs                             # Login request DTO
+├── LoginResponse.cs                        # Login response DTO
+├── ResponseAPI.cs                          # Standard API response wrapper
+├── UsuariosDTO.cs                          # User data transfer object
+└── SolicitudesShared.csproj                # Project file
+```
+
+### Purpose of Shared Project
+
+**Why Shared?**
+- Ensures type consistency between frontend and backend
+- Avoids code duplication
+- Single source of truth for data contracts
+- Enables compile-time checking
+
+**What Goes Here?**
+- DTOs (Data Transfer Objects)
+- Request/response models
+- Validation attributes
+- Enums and constants
+- Common utilities
+
+## File Naming Conventions
+
+### Razor Components (.razor)
+- PascalCase for file names
+- Spaces allowed in folder names (Spanish naming)
+- Example: `Detalles de Expediente.razor`
+
+### Component Styles (.razor.css)
+- Same name as component with `.css` extension
+- Scoped to the component automatically
+- Example: `Detalles de Expediente.razor.css`
+
+### C# Classes (.cs)
+- PascalCase for file names
+- One class per file (typically)
+- Example: `ExpedienteService.cs`
+
+### Interfaces (I*.cs)
+- Prefix with 'I'
+- Example: `IExpedienteService.cs`
+
+## Code Organization Patterns
+
+### Frontend Service Layer
+
+**Pattern:**
+```
+Interface Definition → Implementation → Service Registration
+```
+
+**Example:**
+```csharp
+// 1. Interface (IExpedienteService.cs)
+public interface IExpedienteService
+{
+    Task<List<ExpedienteDTO>> GetAllAsync();
+    // ... other methods
+}
+
+// 2. Implementation (ExpedienteService.cs)
+public class ExpedienteService : IExpedienteService
+{
+    private readonly HttpClient _httpClient;
+    // ... implementation
+}
+
+// 3. Registration (Program.cs)
+builder.Services.AddScoped<IExpedienteService, ExpedienteService>();
+```
+
+### Backend Controller Pattern
+
+**Pattern:**
+```
+Controller → DbContext → Database
+```
+
+**Example:**
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class ExpedienteDTOesController : ControllerBase
+{
+    private readonly SistemaSolicitudesContext _context;
+    
+    public ExpedienteDTOesController(SistemaSolicitudesContext context)
+    {
+        _context = context;
+    }
+    
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Expediente>>> GetExpedientes()
+    {
+        return await _context.Expedientes.ToListAsync();
+    }
+}
+```
+
+### DTO Pattern
+
+**Shared DTOs:**
+```csharp
+// SolicitudesShared/ExpedienteDTO.cs
+public class ExpedienteDTO
+{
+    public int Id { get; set; }
+    public string Folio { get; set; }
+    // ... properties match both frontend and backend needs
+}
+```
+
+**Used by:**
+- Backend: Send data to frontend
+- Frontend: Receive and display data
+- Validation: Shared validation attributes
+
+## Configuration Files
+
+### Frontend Configuration
+
+#### wwwroot/appsettings.json (if present)
+**Purpose:** Frontend configuration
+**Contains:**
+- Feature flags
+- API endpoints
+- Client-side settings
+
+### Backend Configuration
+
+#### appsettings.json
+**Purpose:** Production configuration
+**Contains:**
+- Connection strings
+- JWT settings
+- Logging configuration
+- Application settings
+
+#### appsettings.Development.json
+**Purpose:** Development overrides
+**Contains:**
+- Development-specific settings
+- Verbose logging
+- Local service endpoints
+
+## Static Assets (wwwroot/)
+
+### Purpose
+- Static files served directly to browser
+- Images, CSS, JavaScript, fonts
+- PWA assets (manifest, service worker)
+
+### Organization
+```
+wwwroot/
+├── css/              # Stylesheets
+├── js/               # JavaScript files
+├── images/           # Images and icons
+├── fonts/            # Custom fonts
+├── index.html        # SPA entry point
+├── manifest.json     # PWA manifest
+├── service-worker.js # Service worker
+└── favicon.ico       # Site icon
+```
+
+## Build Output
+
+### Frontend Build
+**Location:** `bin/Debug/net9.0/` or `bin/Release/net9.0/`
+**Published:** `bin/Release/net9.0/publish/wwwroot/`
+
+**Contents:**
+- WebAssembly files (.wasm)
+- .NET assemblies (.dll)
+- Static assets
+- Service worker
+
+### Backend Build
+**Location:** `bin/Debug/net9.0/` or `bin/Release/net9.0/`
+**Published:** `bin/Release/net9.0/publish/`
+
+**Contents:**
+- Compiled assemblies
+- Configuration files
+- Dependencies
+
+## Dependencies Flow
+
+```
+┌─────────────────────────────────────┐
+│  Sistema de Seguimiento...          │
+│  (Blazor Frontend)                  │
+└──────────────┬──────────────────────┘
+               │
+               │ References
+               ▼
+┌─────────────────────────────────────┐
+│     SolicitudesShared               │
+│     (DTOs & Models)                 │
+└─────────────────────────────────────┘
+               ▲
+               │ References
+               │
+┌──────────────┴──────────────────────┐
+│     SolicitudesAPI                  │
+│     (Backend API)                   │
+└─────────────────────────────────────┘
+```
+
+**Dependencies:**
+- Frontend references Shared
+- Backend references Shared
+- Shared has no dependencies on Frontend or Backend
+
+## Project References
+
+### Frontend .csproj
+```xml
+<ItemGroup>
+  <ProjectReference Include="..\SolicitudesShared\SolicitudesShared.csproj" />
+</ItemGroup>
+```
+
+### Backend .csproj
+```xml
+<ItemGroup>
+  <ProjectReference Include="..\SolicitudesShared\SolicitudesShared.csproj" />
+</ItemGroup>
+```
+
+## Next Steps
+
+- [Development Setup](/development/setup) - Set up your environment
+- [Contributing Guide](/development/contributing) - How to contribute
+- [Architecture Overview](/architecture/overview) - Understand the design

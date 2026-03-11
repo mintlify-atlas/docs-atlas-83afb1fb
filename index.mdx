@@ -1,97 +1,91 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Sistema de Seguimiento de Solicitudes"
+description: "A comprehensive request tracking system for managing transparency requests and revision resources with workflow management and digital file handling"
 ---
 
-## Setting up
-
-Get your documentation site up and running in minutes.
-
 <Card
-  title="Start here"
+  title="Get Started Quickly"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Set up your request tracking system in minutes
 </Card>
 
-## Make it yours
+## Core Features
 
-Design a docs site that looks great and empowers your users.
+Powerful tools to manage transparency requests from submission to resolution.
 
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Request Management"
+    icon="folder-open"
+    href="/features/request-management"
   >
-    Edit your docs locally and preview them in real time.
+    Complete lifecycle tracking for transparency requests with status monitoring
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Digital Files"
+    icon="file-lines"
+    href="/features/digital-files"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Secure digital file management and document storage
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
+    title="Calendar System"
+    icon="calendar-days"
+    href="/features/calendar-system"
   >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+    Automated deadline tracking with business day calculations
   </Card>
   <Card
-    title="Code samples"
+    title="User Management"
+    icon="users"
+    href="/features/user-management"
+  >
+    Role-based access control with JWT authentication
+  </Card>
+</CardGroup>
+
+## Quick Links
+
+<CardGroup cols={2}>
+  <Card
+    title="Installation Guide"
+    icon="download"
+    href="/installation"
+  >
+    Install and configure the system
+  </Card>
+  <Card
+    title="API Reference"
     icon="code"
-    href="/essentials/code"
+    href="/api/auth/login"
   >
-    Add sample code to demonstrate how to use your product.
+    Explore the REST API endpoints
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="User Guide"
+    icon="book-open"
+    href="/guide/authentication"
   >
-    Display images and other media.
+    Learn how to use the system
   </Card>
   <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
+    title="Architecture"
+    icon="sitemap"
+    href="/architecture/overview"
   >
-    Write once and reuse across your docs.
+    Understand the system design
   </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+## Technology Stack
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+Built with modern technologies for performance and reliability.
+
+- **Frontend**: Blazor WebAssembly with MudBlazor and Radzen components
+- **Backend**: ASP.NET Core 9.0 Web API
+- **Database**: SQL Server with Entity Framework Core
+- **Authentication**: JWT tokens with role-based authorization
+- **PDF Generation**: QuestPDF for report generation

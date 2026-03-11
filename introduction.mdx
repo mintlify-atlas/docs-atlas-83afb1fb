@@ -1,0 +1,183 @@
+---
+title: Introduction
+description: Sistema de Seguimiento de Solicitudes - A comprehensive SaaS platform for managing transparency requests
+---
+
+## Welcome to Sistema de Seguimiento de Solicitudes
+
+Sistema de Seguimiento de Solicitudes is a modern web application designed to streamline the management and tracking of transparency requests (solicitudes de transparencia). Built with cutting-edge technologies, it provides a complete solution for government agencies and organizations to efficiently process, track, and respond to public information requests.
+
+## What is Sistema de Seguimiento de Solicitudes?
+
+This application provides a comprehensive platform for:
+
+- **Request Management**: Create, track, and manage transparency requests throughout their entire lifecycle
+- **Calendar Integration**: Track deadlines, extensions, and important dates with an integrated calendar system
+- **Document Management**: Organize and manage digital case files (expedientes digitales) with full document tracking
+- **User Authentication**: Secure role-based access control with JWT authentication
+- **Reporting & Analytics**: Monitor request processing times, response rates, and compliance metrics
+- **Appeal Tracking**: Manage recursos de revisión (appeals) with complete audit trails
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Request Tracking" icon="folder-open">
+    Complete lifecycle management for transparency requests with automated deadline tracking and notifications
+  </Card>
+  <Card title="Calendar System" icon="calendar">
+    Integrated calendar with automatic calculation of response deadlines, extensions, and non-working days
+  </Card>
+  <Card title="Digital Files" icon="file-lines">
+    Comprehensive digital file management system for organizing request documentation and responses
+  </Card>
+  <Card title="User Management" icon="users">
+    Role-based access control with secure authentication and authorization
+  </Card>
+</CardGroup>
+
+## Architecture Overview
+
+The system is built using a modern, scalable architecture:
+
+### Frontend (Blazor WebAssembly)
+- **Framework**: .NET 9.0 Blazor WebAssembly
+- **UI Components**: MudBlazor, Radzen Blazor
+- **Authentication**: JWT-based authentication with custom AuthenticationStateProvider
+- **State Management**: Scoped services with dependency injection
+- **PWA Support**: Service worker for offline capabilities
+
+### Backend (ASP.NET Core Web API)
+- **Framework**: .NET 9.0 Web API
+- **Database**: SQL Server with Entity Framework Core 9.0
+- **Authentication**: JWT Bearer authentication
+- **API Documentation**: Scalar API reference
+- **PDF Generation**: QuestPDF for report generation
+
+### Key Technologies
+
+```json
+{
+  "frontend": {
+    "framework": "Blazor WebAssembly (.NET 9.0)",
+    "ui_libraries": ["MudBlazor 8.6.0", "Radzen.Blazor 7.0.7"],
+    "utilities": ["SweetAlert2", "ClosedXML"]
+  },
+  "backend": {
+    "framework": "ASP.NET Core 9.0",
+    "database": "SQL Server",
+    "orm": "Entity Framework Core 9.0",
+    "authentication": "JWT Bearer",
+    "reporting": "QuestPDF"
+  }
+}
+```
+
+## Core Modules
+
+### Request Management Module
+Handle all aspects of transparency requests including:
+- Request creation and registration
+- Automatic deadline calculation
+- Extension requests (ampliaciones)
+- Prevention notices (prevenciones)
+- Response tracking and delivery
+
+### Calendar Module
+Automated deadline management:
+- Working day calculations
+- Manual holiday configuration
+- Automatic deadline notifications
+- Integration with request lifecycle events
+
+### Digital File Module
+Complete document management:
+- File organization by case number (folio)
+- Document version control
+- Attachment management
+- PDF generation and export
+
+### Appeal Module (Recurso de Revisión)
+Manage review appeals:
+- Appeal registration and tracking
+- Link appeals to original requests
+- Timeline tracking
+- Resolution management
+
+## Data Model Overview
+
+The system manages several key entities:
+
+<Steps>
+  <Step title="Expediente (Request File)">
+    Core entity containing all information about a transparency request, including:
+    - Folio (case number)
+    - Request type and subject matter
+    - Requester information
+    - Deadlines and timelines
+    - Response status and content
+  </Step>
+  
+  <Step title="Calendario (Calendar)">
+    Manages working days and deadlines:
+    - Automatic business day calculations
+    - Manual holiday configuration
+    - Deadline tracking for requests
+  </Step>
+  
+  <Step title="Usuario (User)">
+    User authentication and authorization:
+    - Username and hashed passwords
+    - Role-based access control
+    - JWT token management
+  </Step>
+  
+  <Step title="Recurso de Revisión (Appeal)">
+    Tracks appeals against request responses:
+    - Link to original expediente
+    - Appeal content and justification
+    - Resolution tracking
+  </Step>
+</Steps>
+
+## Security Features
+
+<Note>
+The system implements multiple layers of security to protect sensitive information:
+- **Password Hashing**: Using ASP.NET Core Identity password hasher
+- **JWT Authentication**: Secure token-based authentication with configurable expiration
+- **HTTPS Enforcement**: Required for production deployments
+- **Role-Based Authorization**: Granular access control based on user roles
+- **CORS Configuration**: Controlled cross-origin resource sharing
+</Note>
+
+## Performance & Scalability
+
+The application is designed for scalability:
+- **Client-side rendering**: Blazor WebAssembly reduces server load
+- **API optimization**: Entity Framework query optimization
+- **Caching strategies**: LocalStorage for client-side data
+- **Progressive Web App**: Service worker for offline functionality
+
+## Compliance & Accessibility
+
+<Warning>
+The system includes accessibility auditing capabilities:
+- Automated accessibility reports using Axe-core
+- WCAG compliance testing
+- Regular accessibility audits
+</Warning>
+
+## Getting Started
+
+Ready to get started? Check out our [Quickstart Guide](/quickstart) for a step-by-step walkthrough of creating your first transparency request, or jump to the [Installation Guide](/installation) to set up your own instance.
+
+## Support & Documentation
+
+This documentation covers:
+- Installation and configuration
+- API reference and endpoints
+- User guides and workflows
+- Development guidelines
+- Troubleshooting and FAQs
+
+Navigate through the sections using the sidebar to find detailed information on specific topics.

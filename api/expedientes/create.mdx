@@ -1,0 +1,105 @@
+---
+title: 'Crear Expediente'
+api: 'POST /api/Expedientes/Crear'
+description: 'Crea un nuevo expediente en el sistema'
+---
+
+## Descripción
+
+Este endpoint permite crear un nuevo expediente en el sistema. Solo requiere los campos básicos para la creación inicial: Folio, NombreSolicitante, FechaInicio, Estado y ContenidoSolicitud.
+
+## Endpoint
+
+```
+POST /api/Expedientes/Crear
+```
+
+## Cuerpo de la Solicitud
+
+<ParamField body="Folio" type="string">
+  Número de folio de la solicitud
+</ParamField>
+
+<ParamField body="NombreSolicitante" type="string" required>
+  Nombre completo del solicitante
+</ParamField>
+
+<ParamField body="FechaInicio" type="datetime" required>
+  Fecha de inicio del trámite (formato: ISO 8601, ej: "2024-01-15T10:30:00")
+</ParamField>
+
+<ParamField body="Estado" type="string">
+  Estado inicial del expediente (ej: "En proceso", "Pendiente")
+</ParamField>
+
+<ParamField body="ContenidoSolicitud" type="string">
+  Descripción detallada del contenido de la solicitud
+</ParamField>
+
+## Respuesta
+
+### Estructura de la respuesta exitosa
+
+<ResponseField name="Exito" type="boolean" required>
+  Indica si la operación fue exitosa
+</ResponseField>
+
+<ResponseField name="Mensaje" type="string">
+  Mensaje descriptivo en caso de error
+</ResponseField>
+
+<ResponseField name="Data" type="integer">
+  ID del expediente creado
+</ResponseField>
+
+## Ejemplo de Solicitud
+
+```bash
+curl -X POST "https://api.ejemplo.com/api/Expedientes/Crear" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Folio": "2024-001",
+    "NombreSolicitante": "Juan Pérez García",
+    "FechaInicio": "2024-01-15T10:30:00",
+    "Estado": "En proceso",
+    "ContenidoSolicitud": "Solicito información sobre el presupuesto asignado al área de educación para el ejercicio fiscal 2024"
+  }'
+```
+
+## Ejemplo de Respuesta Exitosa
+
+```json
+{
+  "Exito": true,
+  "Mensaje": null,
+  "Data": 42
+}
+```
+
+## Ejemplo de Respuesta con Error
+
+```json
+{
+  "Exito": false,
+  "Mensaje": "No se pudo crear el expediente",
+  "Data": 0
+}
+```
+
+## Códigos de Estado
+
+<ResponseField name="200" type="OK">
+  La solicitud se procesó correctamente. Revise el campo `Exito` para determinar si la creación fue exitosa.
+</ResponseField>
+
+## Validaciones
+
+- El campo `NombreSolicitante` es requerido y no puede estar vacío
+- El campo `FechaInicio` debe estar en formato de fecha válido
+- Si `Data` es 0, indica que el expediente no se creó correctamente
+
+## Notas Adicionales
+
+- Una vez creado el expediente, puede actualizarse con información adicional usando el endpoint de actualización
+- El ID retornado en `Data` debe utilizarse para operaciones posteriores sobre este expediente
+- Los campos adicionales de las etapas de seguimiento y final pueden agregarse posteriormente mediante el endpoint PUT
